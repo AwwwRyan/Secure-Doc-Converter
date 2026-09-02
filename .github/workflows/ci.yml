@@ -21,9 +21,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Vendored engine checksums
-        run: |
-          (cd public/vendor/tesseract && sha256sum -c SHA256SUMS)
-          (cd public/vendor/qpdf && sha256sum -c SHA256SUMS)
+        # Also runs automatically as `prebuild`; kept as an explicit early gate.
+        run: pnpm verify:vendored
 
       - name: Typecheck
         run: pnpm typecheck

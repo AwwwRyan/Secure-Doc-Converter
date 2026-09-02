@@ -32,7 +32,12 @@ export function HtmlShell({ tool }: { tool: ToolDef }) {
   const done = status === 'done';
 
   async function loadFile(file: File | undefined) {
-    if (file) setHtml(await file.text());
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setError('That HTML file is over 5 MB. Paste the part you need instead.');
+      return;
+    }
+    setHtml(await file.text());
   }
 
   async function convert() {

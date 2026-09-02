@@ -20,6 +20,10 @@ export default defineConfig({
   preview: { headers: crossOriginIsolation },
   build: {
     target: 'es2022',
-    sourcemap: true,
+    // No source maps in the deployed bundle: they carry every dependency's
+    // original source (and the URL strings in its comments), which muddies the
+    // "grep the build for third-party origins → none" guarantee (docs/05).
+    // The repo is public — build locally with `--sourcemap` to debug.
+    sourcemap: false,
   },
 });
