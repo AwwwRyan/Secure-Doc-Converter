@@ -2,14 +2,14 @@ import { useCallback, useEffect, useRef } from 'react';
 import * as Comlink from 'comlink';
 import { createWorker, type ToolWorkerHandle } from '@/lib/workers/pool';
 import type { RunResult } from '@/lib/workers/types';
-import { useSession } from '@/lib/store/session';
-import { zipFiles } from '@/lib/zip';
+import { useSession, type ResultFile } from '@/lib/store/session';
 
 /**
  * Drives one tool run: spins the tool's code-split worker, streams progress into
- * the session store, turns the worker result into a downloadable object URL
- * (zipping when there are several files). The worker is always terminated
- * (success, error, cancel, or unmount) so document buffers are freed.
+ * the session store, and stores each output file (name + object URL + bytes) so
+ * the shell can offer them individually or bundled as a .zip. The worker is
+ * always terminated (success, error, cancel, or unmount) so document buffers are
+ * freed.
  */
 export function useToolRun(workerId: string) {
   const handleRef = useRef<ToolWorkerHandle | null>(null);
@@ -47,8 +47,17 @@ export function useToolRun(workerId: string) {
           Comlink.proxy((fraction: number) => setProgress(fraction)),
         );
 
-        const { blob, name, fileCount } = toDownload(out);
-        setResult({ url: URL.createObjectURL(blob), name, fileCount });
+        const parts =
+          out.kind === 'file'
+            ? [{ name: out.name, bytes: out.bytes, mime: out.mime }]
+            : out.files.map((f) => ({ name: f.name, bytes: f.bytes, mime: 'application/pdf' }));
+
+        const result: ResultFile[] = parts.map((p) => ({
+          name: p.name,
+          bytes: p.bytes,
+          url: URL.createObjectURL(new Blob([p.bytes], { type: p.mime })),
+        }));
+        setResult(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong.');
       } finally {
@@ -64,23 +73,4 @@ export function useToolRun(workerId: string) {
   }, [dispose, reset]);
 
   return { run, cancel };
-}
-
-function toDownload(out: RunResult): { blob: Blob; name: string; fileCount: number } {
-  if (out.kind === 'file') {
-    return { blob: new Blob([out.bytes], { type: out.mime }), name: out.name, fileCount: 1 };
-  }
-  if (out.files.length === 1) {
-    const only = out.files[0]!;
-    return {
-      blob: new Blob([only.bytes], { type: 'application/pdf' }),
-      name: only.name,
-      fileCount: 1,
-    };
-  }
-  return {
-    blob: new Blob([zipFiles(out.files)], { type: 'application/zip' }),
-    name: 'result.zip',
-    fileCount: out.files.length,
-  };
 }

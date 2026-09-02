@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { PDFDocument } from '@cantoo/pdf-lib';
 import {
+  arrange,
   extractPages,
   merge,
   pageCount,
@@ -84,5 +85,22 @@ describe('organize', () => {
 
   it('refuses an empty result', async () => {
     await expect(removePages(three, [1, 2, 3])).rejects.toBeInstanceOf(EmptyResultError);
+  });
+
+  it('arranges: reorder + per-page rotation + drop in one pass', async () => {
+    const out = await arrange(five, [
+      { page: 3, rotate: 90 },
+      { page: 1, rotate: 0 },
+      { page: 5, rotate: 180 },
+    ]);
+    const doc = await PDFDocument.load(out);
+    expect(doc.getPageCount()).toBe(3);
+    expect(doc.getPage(0).getRotation().angle).toBe(90);
+    expect(doc.getPage(1).getRotation().angle).toBe(0);
+    expect(doc.getPage(2).getRotation().angle).toBe(180);
+  });
+
+  it('arrange refuses an all-dropped spec', async () => {
+    await expect(arrange(three, [])).rejects.toBeInstanceOf(EmptyResultError);
   });
 });

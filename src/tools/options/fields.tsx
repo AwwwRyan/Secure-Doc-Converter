@@ -33,7 +33,6 @@ export function TextField({
   return (
     <input
       type="text"
-      inputMode="numeric"
       aria-label={ariaLabel}
       value={value}
       placeholder={placeholder}

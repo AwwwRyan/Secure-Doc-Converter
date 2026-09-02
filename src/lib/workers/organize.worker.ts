@@ -2,6 +2,7 @@
 import * as Comlink from 'comlink';
 import type { ProgressFn, RunResult, ToolWorkerApi } from '@/lib/workers/types';
 import {
+  arrange,
   extractPages,
   merge,
   pageCount,
@@ -9,6 +10,7 @@ import {
   rotate,
   split,
   type Angle,
+  type ArrangedPage,
   type SplitMode,
 } from '@/lib/pdf/organize';
 import { parsePageRange } from '@/lib/pdf/range';
@@ -49,6 +51,16 @@ const api: ToolWorkerApi = {
         return { kind: 'file', name: 'rotated.pdf', mime: 'application/pdf', bytes };
       }
 
+      case 'arrange': {
+        const spec = Array.isArray(options['spec']) ? (options['spec'] as unknown[]) : [];
+        const parsed: ArrangedPage[] = spec.map((s) => {
+          const o = s as Record<string, unknown>;
+          return { page: int(o['page'], 0), rotate: (int(o['rotate'], 0) as Angle) || 0 };
+        });
+        const bytes = await arrange(first!, parsed, onProgress);
+        return { kind: 'file', name: 'arranged.pdf', mime: 'application/pdf', bytes };
+      }
+
       case 'remove': {
         const total = await pageCount(first!);
         const drop = parsePageRange(str(options['range']), total);
@@ -78,10 +90,12 @@ const api: ToolWorkerApi = {
         let split_: SplitMode;
         if (mode === 'pages') split_ = { type: 'pages' };
         else if (mode === 'ranges') {
+          // One output file per comma / semicolon / newline separated range.
           const ranges = str(options['ranges'])
-            .split(/[;\n]/)
+            .split(/[,;\n]/)
             .map((chunk) => parsePageRange(chunk, total))
             .filter((r) => r.length > 0);
+          if (ranges.length === 0) throw new Error('Enter at least one range, e.g. 1-3, 4-6.');
           split_ = { type: 'ranges', ranges };
         } else split_ = { type: 'everyN', n: Math.max(1, int(options['n'], 1)) };
 

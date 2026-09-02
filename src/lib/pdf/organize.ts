@@ -96,6 +96,46 @@ export function reorderPages(bytes: ArrayBuffer, order: number[], onProgress: Pr
   return rebuild(bytes, order, onProgress);
 }
 
+export interface ArrangedPage {
+  /** 1-based page number in the source document. */
+  page: number;
+  /** Extra rotation to add, in degrees. */
+  rotate: Angle;
+}
+
+/**
+ * Rebuild a PDF from an explicit ordered list of source pages, each with an
+ * added rotation. Powers the visual page grid (reorder + rotate + delete in one
+ * pass — deleted pages are simply absent from `spec`).
+ */
+export async function arrange(
+  bytes: ArrayBuffer,
+  spec: ArrangedPage[],
+  onProgress: Progress = noop,
+): Promise<ArrayBuffer> {
+  const src = await load(bytes);
+  const total = src.getPageCount();
+  const valid = spec.filter((s) => s.page >= 1 && s.page <= total);
+  if (valid.length === 0) throw new EmptyResultError();
+
+  const out = await PDFDocument.create();
+  const copied = await out.copyPages(
+    src,
+    valid.map((s) => s.page - 1),
+  );
+  for (let i = 0; i < copied.length; i++) {
+    const page = copied[i]!;
+    const extra = valid[i]!.rotate;
+    if (extra) {
+      page.setRotation(degrees((((page.getRotation().angle + extra) % 360) + 360) % 360));
+    }
+    out.addPage(page);
+    if (i % 25 === 0) onProgress(i / copied.length);
+  }
+  onProgress(1);
+  return save(out);
+}
+
 /** Rotate the given pages (1-based; empty = all) by `angle`, added to any existing rotation. */
 export async function rotate(
   bytes: ArrayBuffer,

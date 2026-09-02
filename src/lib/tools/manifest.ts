@@ -75,7 +75,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'organize',
     blurb: 'Drag pages into a new order',
     icon: SlidersHorizontal,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
   {

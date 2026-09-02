@@ -1,9 +1,11 @@
 import type { ComponentType } from 'react';
+import type { ToolDef } from '@/lib/tools/types';
 import { ExtractOptions } from '@/tools/options/ExtractOptions';
 import { MergeOptions } from '@/tools/options/MergeOptions';
 import { RemoveOptions } from '@/tools/options/RemoveOptions';
 import { RotateOptions } from '@/tools/options/RotateOptions';
 import { SplitOptions } from '@/tools/options/SplitOptions';
+import { OrganizeShell } from '@/tools/lazy-shells';
 
 export type ToolOptions = Record<string, unknown>;
 
@@ -21,6 +23,8 @@ export interface ToolConfig {
   readonly action: string;
   readonly defaultOptions: ToolOptions;
   readonly Options?: ComponentType<OptionsProps>;
+  /** Replaces the generic ToolShell entirely (e.g. the page-grid editor). Lazy. */
+  readonly CustomShell?: ComponentType<{ tool: ToolDef }>;
 }
 
 /**
@@ -62,6 +66,13 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
     action: 'Rotate',
     defaultOptions: { op: 'rotate', angle: 90, scope: 'all', range: '' },
     Options: RotateOptions as ComponentType<OptionsProps>,
+  },
+  'organize-pages': {
+    workerId: 'organize',
+    multiple: false,
+    action: 'Apply changes',
+    defaultOptions: { op: 'arrange' },
+    CustomShell: OrganizeShell,
   },
 };
 

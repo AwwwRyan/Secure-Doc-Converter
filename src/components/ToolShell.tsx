@@ -1,21 +1,16 @@
 import { useState } from 'react';
 import type { DragEvent } from 'react';
 import { Link } from 'react-router';
-import { ChevronDown, ChevronLeft, ChevronUp, Download, RotateCcw, Upload, X } from 'lucide-react';
+import { ChevronLeft, Upload } from 'lucide-react';
 import type { ToolDef } from '@/lib/tools/types';
 import type { ToolConfig } from '@/tools/registry';
 import { useSession } from '@/lib/store/session';
 import { useToolRun } from '@/lib/hooks/useToolRun';
+import { FileList } from '@/components/FileList';
+import { ResultCard } from '@/components/ResultCard';
 import { PrivacyBadge } from '@/components/PrivacyBadge';
 import { Button } from '@/ui/Button';
-import { buttonVariants } from '@/ui/button-variants';
 import { cn } from '@/ui/cn';
-
-function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig }) {
   const files = useSession((s) => s.files);
@@ -26,6 +21,7 @@ export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig 
   const addFiles = useSession((s) => s.addFiles);
   const removeFile = useSession((s) => s.removeFile);
   const moveFile = useSession((s) => s.moveFile);
+  const moveFileTo = useSession((s) => s.moveFileTo);
 
   const { run, cancel } = useToolRun(config.workerId);
   const [options, setOptions] = useState<Record<string, unknown>>(config.defaultOptions);
@@ -67,55 +63,14 @@ export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig 
           </span>
 
           {files.length > 0 && (
-            <ul className="flex flex-col gap-2">
-              {files.map((f, i) => (
-                <li
-                  key={f.id}
-                  className="flex items-center gap-2.5 rounded-xl border border-line bg-surface p-3 shadow-sm"
-                >
-                  {config.multiple && files.length > 1 && !busy && (
-                    <span className="flex flex-none flex-col">
-                      <button
-                        type="button"
-                        aria-label="Move up"
-                        disabled={i === 0}
-                        onClick={() => moveFile(f.id, -1)}
-                        className="text-faint hover:text-ink disabled:opacity-30"
-                      >
-                        <ChevronUp size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label="Move down"
-                        disabled={i === files.length - 1}
-                        onClick={() => moveFile(f.id, 1)}
-                        className="text-faint hover:text-ink disabled:opacity-30"
-                      >
-                        <ChevronDown size={14} />
-                      </button>
-                    </span>
-                  )}
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold text-ink">
-                      {f.name}
-                    </span>
-                    <span className="text-[11.5px] text-muted tabular-nums">
-                      {formatBytes(f.size)}
-                    </span>
-                  </span>
-                  {!busy && (
-                    <button
-                      type="button"
-                      aria-label={`Remove ${f.name}`}
-                      onClick={() => removeFile(f.id)}
-                      className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-[7px] border border-line text-muted hover:text-ink"
-                    >
-                      <X size={13} />
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <FileList
+              files={files}
+              reorderable={config.multiple}
+              disabled={busy}
+              onRemove={removeFile}
+              onMove={moveFile}
+              onMoveTo={moveFileTo}
+            />
           )}
 
           {(config.multiple || files.length === 0) && (
@@ -167,27 +122,7 @@ export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig 
             </div>
           )}
 
-          {done && result && (
-            <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
-              <span className="text-[11px] font-bold tracking-[0.08em] text-good-ink uppercase">
-                Result
-              </span>
-              <span className="truncate text-[12.5px] text-muted">
-                {result.name}
-                {result.fileCount > 1 && ` · ${result.fileCount} files, zipped`}
-              </span>
-              <a
-                href={result.url}
-                download={result.name}
-                className={cn(buttonVariants({ size: 'md' }), 'w-full')}
-              >
-                <Download size={15} /> Download
-              </a>
-              <Button variant="ghost" size="sm" onClick={cancel}>
-                <RotateCcw size={13} /> Start over
-              </Button>
-            </div>
-          )}
+          {done && result && <ResultCard result={result} onStartOver={cancel} />}
 
           {busy && (
             <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">

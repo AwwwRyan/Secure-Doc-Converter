@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { ChevronLeft, Wrench } from 'lucide-react';
@@ -59,6 +59,14 @@ export function ToolPage() {
     );
   }
 
+  if (config.CustomShell) {
+    const CustomShell = config.CustomShell;
+    return (
+      <Suspense fallback={<p className="text-[13px] text-muted">Loading…</p>}>
+        <CustomShell tool={tool} />
+      </Suspense>
+    );
+  }
   return <ToolShell tool={tool} config={config} />;
 }
 

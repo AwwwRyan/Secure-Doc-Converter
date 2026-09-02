@@ -44,11 +44,17 @@ with the same gate.
 
 Merge, Split, Remove pages, Extract pages, Organize/Reorder, Rotate.
 
-**Status: M1a done** — Merge, Split, Remove pages, Extract pages, Rotate are
-live (`@cantoo/pdf-lib`, range-expression input, `.zip` for multi-file output,
-worker-per-engine). **M1b** (next): the visual page-thumbnail grid for
-Reorder/Organize (pdf.js thumbnails, drag + keyboard reorder, per-page
-rotate/delete), plus click-to-select pages in Remove/Extract.
+**Status: M1 done.**
+
+- M1a — Merge, Split, Remove pages, Extract pages, Rotate (`@cantoo/pdf-lib`,
+  range-expression input, worker-per-engine).
+- M1b — **Reorder pages** visual grid (pdf.js lazy thumbnails, drag + keyboard
+  reorder, per-page rotate/delete, multi-select); split range UX (3 modes,
+  comma-separated custom ranges, size presets); multi-file results offer
+  "download separately" **or** ".zip" (no forced zip); merge file list gets a
+  drag handle + animated (View Transition) reorder.
+- Deferred: click-to-select pages inside Remove/Extract (the range field covers
+  it); View Transitions on the page-thumbnail grid.
 
 - `lib/pdf` wrappers over `pdf-lib`; `pdf.js` thumbnail renderer in a worker.
 - `PageGrid` / `PageThumb` (S3) with drag **and** keyboard reorder, multi-select,
