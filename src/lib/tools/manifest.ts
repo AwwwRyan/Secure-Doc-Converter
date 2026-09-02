@@ -201,7 +201,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'unlock',
     blurb: 'Remove a password you know',
     icon: LockOpen,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
 ] as const;

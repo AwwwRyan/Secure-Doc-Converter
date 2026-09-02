@@ -41,6 +41,8 @@ describe('tool manifest', () => {
         'compress',
         'repair',
         'ocr',
+        // M4 — Unlock
+        'unlock',
       ]),
     );
   });

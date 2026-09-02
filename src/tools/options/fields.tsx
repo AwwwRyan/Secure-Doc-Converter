@@ -1,5 +1,40 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { cn } from '@/ui/cn';
+
+export function PasswordField({
+  value,
+  onChange,
+  ariaLabel,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  ariaLabel: string;
+  placeholder?: string;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <span className="flex h-9 items-center gap-1 rounded-[var(--radius-ctl)] border border-line bg-surface pr-1 pl-3 focus-within:border-accent">
+      <input
+        type={show ? 'text' : 'password'}
+        aria-label={ariaLabel}
+        value={value}
+        placeholder={placeholder}
+        autoComplete="off"
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-transparent text-[13px] tracking-wider text-ink outline-none placeholder:tracking-normal placeholder:text-faint"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="h-7 rounded-md px-2 text-[11.5px] font-medium text-muted hover:text-ink"
+      >
+        {show ? 'Hide' : 'Show'}
+      </button>
+    </span>
+  );
+}
 
 export function Field({
   label,

@@ -9,7 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "vendor": "node scripts/vendor-tesseract.mjs",
+    "vendor": "node scripts/vendor-tesseract.mjs && node scripts/vendor-qpdf.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@cantoo/pdf-lib": "2.9.1",
+    "@neslinesli93/qpdf-wasm": "0.3.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "comlink": "4.4.2",

@@ -151,8 +151,14 @@ savings on image-heavy PDFs; repair fixes broken-xref samples.
 - S5 flow: needs-password / wrong-password / restrictions-only / success.
 - Refusal copy for cracking; ethics/consent line.
 
-**Done when:** correct password → clean unprotected PDF; wrong password → clear
-error, no output; nothing logged.
+**Status: done.** `@neslinesli93/qpdf-wasm` in `unlock.worker`; `.wasm` vendored
+to `public/vendor/qpdf/` (`SHA256SUMS` in CI). `UnlockOptions` = password field
+(show/hide) + the "we don't crack passwords / only unlock what you may" note.
+Blank password handles owner-only (restrictions) PDFs. qpdf's stderr is captured
+so a wrong password becomes *"That password is incorrect…"* — never a console
+leak, never a partial file. Verified: correct pw → opens without a password;
+wrong pw → error, no download; owner-only + blank pw → unlocked; no console
+errors.
 
 ---
 

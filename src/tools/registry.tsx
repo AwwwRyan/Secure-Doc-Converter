@@ -7,6 +7,7 @@ import { PageNumberOptions } from '@/tools/options/PageNumberOptions';
 import { RemoveOptions } from '@/tools/options/RemoveOptions';
 import { RotateOptions } from '@/tools/options/RotateOptions';
 import { SplitOptions } from '@/tools/options/SplitOptions';
+import { UnlockOptions } from '@/tools/options/UnlockOptions';
 import { WatermarkOptions } from '@/tools/options/WatermarkOptions';
 import { EditShell, OcrShell, OrganizeShell } from '@/tools/lazy-shells';
 
@@ -159,6 +160,15 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
     action: 'Run OCR',
     defaultOptions: {},
     CustomShell: OcrShell,
+  },
+
+  // ---- Unlock (M4) ----
+  unlock: {
+    workerId: 'unlock',
+    multiple: false,
+    action: 'Remove password',
+    defaultOptions: { password: '' },
+    Options: UnlockOptions as ComponentType<OptionsProps>,
   },
 };
 

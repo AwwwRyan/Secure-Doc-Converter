@@ -11,6 +11,9 @@ importers:
       '@cantoo/pdf-lib':
         specifier: 2.9.1
         version: 2.9.1(html-entities@2.6.0)
+      '@neslinesli93/qpdf-wasm':
+        specifier: 0.3.0
+        version: 0.3.0
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -412,6 +415,9 @@ packages:
   '@napi-rs/canvas@1.0.8':
     resolution: {integrity: sha512-/SaLcvlqGWdm0HSCWMgHu7cjJiQXfP8/mOY+6dUyV9flQz7sPBBZ+ed2zYtoukojPmxOaL7bm+d/G4GeWWoN7g==}
     engines: {node: '>= 10'}
+
+  '@neslinesli93/qpdf-wasm@0.3.0':
+    resolution: {integrity: sha512-ObyTmabopTMwN6AGwrEkmDbdmM5wnwlRdn9jnJYQ2KbBUPdPDcfNf1QkcWFOVD+qIgSqILz9nK51e22T+x+gkQ==}
 
   '@oxc-project/types@0.147.0':
     resolution: {integrity: sha512-IJ3s6ltHLp45S0bh7phkX+gJO7A1Wuz2EaqpAhb8WjqDwbzMiWKHhyyT42tskaWjEYXtHtVCPpnBJVT9+dcRLg==}
@@ -2132,6 +2138,8 @@ snapshots:
       '@napi-rs/canvas-win32-arm64-msvc': 1.0.8
       '@napi-rs/canvas-win32-x64-msvc': 1.0.8
     optional: true
+
+  '@neslinesli93/qpdf-wasm@0.3.0': {}
 
   '@oxc-project/types@0.147.0': {}
 
