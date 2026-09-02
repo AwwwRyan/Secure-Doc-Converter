@@ -28,7 +28,6 @@ interface SessionState {
   openTool: (toolId: string) => void;
   addFiles: (files: File[]) => void;
   removeFile: (id: string) => void;
-  moveFile: (id: string, dir: -1 | 1) => void;
   moveFileTo: (id: string, index: number) => void;
   setStatus: (status: RunStatus) => void;
   setProgress: (progress: number) => void;
@@ -74,16 +73,6 @@ export const useSession = create<SessionState>((set, get) => ({
     })),
 
   removeFile: (id) => set((s) => ({ files: s.files.filter((f) => f.id !== id) })),
-
-  moveFile: (id, dir) =>
-    set((s) => {
-      const i = s.files.findIndex((f) => f.id === id);
-      const j = i + dir;
-      if (i === -1 || j < 0 || j >= s.files.length) return s;
-      const files = [...s.files];
-      [files[i], files[j]] = [files[j]!, files[i]!];
-      return { files };
-    }),
 
   moveFileTo: (id, index) =>
     set((s) => {

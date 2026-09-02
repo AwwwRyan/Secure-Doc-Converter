@@ -31,10 +31,9 @@ export async function pageCount(bytes: ArrayBuffer): Promise<number> {
   return (await load(bytes)).getPageCount();
 }
 
-/** Merge PDFs in the given order, optionally inserting a blank page between docs. */
+/** Merge PDFs in the given order into one document. */
 export async function merge(
   inputs: ArrayBuffer[],
-  opts: { blankBetween?: boolean } = {},
   onProgress: Progress = noop,
 ): Promise<ArrayBuffer> {
   const out = await PDFDocument.create();
@@ -42,10 +41,6 @@ export async function merge(
     const src = await load(inputs[i]!);
     const copied = await out.copyPages(src, src.getPageIndices());
     for (const page of copied) out.addPage(page);
-    if (opts.blankBetween && i < inputs.length - 1) {
-      const last = out.getPage(out.getPageCount() - 1);
-      out.addPage([last.getWidth(), last.getHeight()]);
-    }
     onProgress((i + 1) / inputs.length);
   }
   if (out.getPageCount() === 0) throw new EmptyResultError();

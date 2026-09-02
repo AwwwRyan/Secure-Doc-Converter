@@ -1,7 +1,6 @@
 import type { ComponentType } from 'react';
 import type { ToolDef } from '@/lib/tools/types';
 import { ExtractOptions } from '@/tools/options/ExtractOptions';
-import { MergeOptions } from '@/tools/options/MergeOptions';
 import { RemoveOptions } from '@/tools/options/RemoveOptions';
 import { RotateOptions } from '@/tools/options/RotateOptions';
 import { SplitOptions } from '@/tools/options/SplitOptions';
@@ -36,8 +35,7 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
     workerId: 'organize',
     multiple: true,
     action: 'Merge',
-    defaultOptions: { op: 'merge', blankBetween: false },
-    Options: MergeOptions as ComponentType<OptionsProps>,
+    defaultOptions: { op: 'merge' },
   },
   split: {
     workerId: 'organize',

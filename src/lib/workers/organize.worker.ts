@@ -34,11 +34,7 @@ const api: ToolWorkerApi = {
 
     switch (op) {
       case 'merge': {
-        const bytes = await merge(
-          inputs,
-          { blankBetween: bool(options['blankBetween']) },
-          onProgress,
-        );
+        const bytes = await merge(inputs, onProgress);
         return { kind: 'file', name: 'merged.pdf', mime: 'application/pdf', bytes };
       }
 

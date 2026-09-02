@@ -32,9 +32,9 @@ describe('organize', () => {
     expect(await pageCount(five)).toBe(5);
   });
 
-  it('merges in order and can add blank separators', async () => {
+  it('merges in order', async () => {
     expect(await pageCount(await merge([five, three]))).toBe(8);
-    expect(await pageCount(await merge([five, three], { blankBetween: true }))).toBe(9);
+    expect(await pageCount(await merge([three, five]))).toBe(8);
   });
 
   it('extracts the requested pages only', async () => {

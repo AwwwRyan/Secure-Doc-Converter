@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, GripVertical, X } from 'lucide-react';
+import { GripVertical, X } from 'lucide-react';
 import type { SessionFile } from '@/lib/store/session';
 import { withViewTransition } from '@/ui/viewTransition';
 import { cn } from '@/ui/cn';
@@ -15,11 +15,10 @@ interface Props {
   reorderable: boolean;
   disabled: boolean;
   onRemove: (id: string) => void;
-  onMove: (id: string, dir: -1 | 1) => void;
   onMoveTo: (id: string, index: number) => void;
 }
 
-export function FileList({ files, reorderable, disabled, onRemove, onMove, onMoveTo }: Props) {
+export function FileList({ files, reorderable, disabled, onRemove, onMoveTo }: Props) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [over, setOver] = useState<{ id: string; below: boolean } | null>(null);
   const canReorder = reorderable && files.length > 1 && !disabled;
@@ -36,9 +35,15 @@ export function FileList({ files, reorderable, disabled, onRemove, onMove, onMov
     setOver(null);
   }
 
+  function nudge(id: string, dir: -1 | 1) {
+    const i = files.findIndex((f) => f.id === id);
+    if (i === -1) return;
+    withViewTransition(() => onMoveTo(id, i + dir));
+  }
+
   return (
     <ul className="flex flex-col gap-2" onDragLeave={() => setOver(null)}>
-      {files.map((f, i) => (
+      {files.map((f) => (
         <li
           key={f.id}
           draggable={canReorder}
@@ -71,29 +76,22 @@ export function FileList({ files, reorderable, disabled, onRemove, onMove, onMov
           )}
         >
           {canReorder && (
-            <span className="flex flex-none items-center gap-1">
-              <GripVertical size={15} className="cursor-grab text-faint active:cursor-grabbing" />
-              <span className="flex flex-col">
-                <button
-                  type="button"
-                  aria-label="Move up"
-                  disabled={i === 0}
-                  onClick={() => withViewTransition(() => onMove(f.id, -1))}
-                  className="text-faint hover:text-ink disabled:opacity-30"
-                >
-                  <ChevronUp size={13} />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Move down"
-                  disabled={i === files.length - 1}
-                  onClick={() => withViewTransition(() => onMove(f.id, 1))}
-                  className="text-faint hover:text-ink disabled:opacity-30"
-                >
-                  <ChevronDown size={13} />
-                </button>
-              </span>
-            </span>
+            <button
+              type="button"
+              aria-label={`Reorder ${f.name} — use arrow keys`}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  nudge(f.id, -1);
+                } else if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  nudge(f.id, 1);
+                }
+              }}
+              className="flex-none cursor-grab text-faint active:cursor-grabbing"
+            >
+              <GripVertical size={16} />
+            </button>
           )}
 
           <span className="min-w-0 flex-1">

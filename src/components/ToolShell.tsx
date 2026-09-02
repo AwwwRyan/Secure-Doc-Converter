@@ -20,7 +20,6 @@ export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig 
   const result = useSession((s) => s.result);
   const addFiles = useSession((s) => s.addFiles);
   const removeFile = useSession((s) => s.removeFile);
-  const moveFile = useSession((s) => s.moveFile);
   const moveFileTo = useSession((s) => s.moveFileTo);
 
   const { run, cancel } = useToolRun(config.workerId);
@@ -68,7 +67,6 @@ export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig 
               reorderable={config.multiple}
               disabled={busy}
               onRemove={removeFile}
-              onMove={moveFile}
               onMoveTo={moveFileTo}
             />
           )}
