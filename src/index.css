@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+
+/* Dark theme applies when [data-theme="dark"] is on <html>. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * Design tokens (docs/06-ui-ux.md). Defined as plain custom properties so they
+ * can be swapped at runtime for theming; @theme inline below exposes them to
+ * Tailwind utilities (bg-surface, text-ink, border-line, ...).
+ */
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --ink: #111418;
+  --muted: #5b6470;
+  --faint: #8a93a0;
+  --line: #e6e8ec;
+  --accent: #2563eb;
+  --accent-press: #1d4ed8;
+  --accent-wash: rgb(37 99 235 / 0.09);
+  --good-bg: #e7f5ec;
+  --good-ink: #0f7b4a;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0e1116;
+    --surface: #161a21;
+    --ink: #e7eaee;
+    --muted: #9aa4b2;
+    --faint: #6c7683;
+    --line: #252b34;
+    --accent: #3b82f6;
+    --accent-press: #60a5fa;
+    --accent-wash: rgb(59 130 246 / 0.16);
+    --good-bg: #12291e;
+    --good-ink: #7ee0a8;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0e1116;
+  --surface: #161a21;
+  --ink: #e7eaee;
+  --muted: #9aa4b2;
+  --faint: #6c7683;
+  --line: #252b34;
+  --accent: #3b82f6;
+  --accent-press: #60a5fa;
+  --accent-wash: rgb(59 130 246 / 0.16);
+  --good-bg: #12291e;
+  --good-ink: #7ee0a8;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-press: var(--accent-press);
+  --color-accent-wash: var(--accent-wash);
+  --color-good-bg: var(--good-bg);
+  --color-good-ink: var(--good-ink);
+
+  --font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+
+  --radius-card: 1rem;
+  --radius-ctl: 0.625rem;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Home — light", "x": 0, "y": 0, "w": 1240, "h": 1740 },
+    { "file": "HomeDark.dc.html", "title": "Home — dark", "x": 1360, "y": 0, "w": 1240, "h": 1740 },
+    { "file": "Compress.dc.html", "title": "Tool shell — Compress PDF", "x": 0, "y": 1880, "w": 1240, "h": 880 },
+    { "file": "Organize.dc.html", "title": "Organize pages — reorder / rotate / delete", "x": 1360, "y": 1880, "w": 1240, "h": 960 },
+    { "file": "Unlock.dc.html", "title": "Unlock PDF", "x": 0, "y": 2980, "w": 1240, "h": 780 },
+    { "file": "OfficeToPdf.dc.html", "title": "Office → PDF (in-browser, two tiers)", "x": 1360, "y": 2980, "w": 1240, "h": 820 }
+  ],
+  "annotations": [
+    { "id": "brief", "x": 0, "y": -168, "w": 640, "text": "Secure Doc Converter — core screens.\nClean/calm/utilitarian, single blue accent (#2563EB), Inter. Light + dark shown via Home in both themes. Every tool runs on your device — no server (ADR-011). Office → PDF has a built-in converter plus an opt-in LibreOffice-WASM download. Written spec: docs/06-ui-ux.md" }
+  ],
+  "launch": { "view": "canvas" }
+}

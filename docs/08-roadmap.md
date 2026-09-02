@@ -1,0 +1,167 @@
+# 08 — Roadmap
+
+Planning started **2026-09-02**. No calendar deadlines — this is a
+friends-and-family project. Milestones are sequenced by dependency and each ends
+with the same gate.
+
+## Milestone gate (applies to every milestone)
+
+- [ ] Feature(s) work end-to-end in Chrome, Firefox, Safari, Edge (desktop) + one mobile browser.
+- [ ] `code-review` skill run on the milestone branch; findings resolved or ADR'd.
+- [ ] Unit tests for the processing logic; one Playwright e2e per new tool.
+- [ ] Network tab audit: every tool uploads nothing (no server exists).
+- [ ] No new third-party runtime origin; no server component; CSP unchanged (or ADR).
+- [ ] Docs updated (feature spec / decisions / CLAUDE.md commands).
+
+---
+
+## M0 — Scaffold & guardrails
+
+**Goal:** an empty but correct skeleton you could deploy.
+
+- Vite + React + TS (strict), Tailwind v4, shadcn/ui base, React Router, zustand.
+- Worker pool (`Comlink`) + per-tool code-splitting harness.
+- `ToolShell` component with all states (empty/drag/running/success/error) using a
+  no-op demo tool.
+- Home launcher (S1) with the real tool manifest (cards, categories, tier chips),
+  tools disabled/"coming soon".
+- About/Privacy page (S8) with the "verify it yourself" steps.
+- Settings (S9): theme, defaults.
+- Deploy config: `vercel.json` (or `_headers` + `_redirects` for Cloudflare
+  Pages) with the full CSP + security headers + COOP/COEP + SPA fallback. Pick
+  the host (Q3). No server, no `deploy/` dir, no Docker.
+- CI: typecheck, lint, unit, e2e, `osv-scanner` / `npm audit`, build the static
+  bundle, `SHA256SUMS` check for vendored engines.
+- Decide application licence (ADR-006); pick `@cantoo/pdf-lib` vs `pdf-lib` (Q1).
+- `init` skill → generate the real `CLAUDE.md` "Commands" section.
+
+**Done when:** the shell is live on the static host over HTTPS with
+`crossOriginIsolated === true`; header linter A/A+; CI green.
+
+---
+
+## M1 — Organize 🟢
+
+Merge, Split, Remove pages, Extract pages, Organize/Reorder, Rotate.
+
+- `lib/pdf` wrappers over `pdf-lib`; `pdf.js` thumbnail renderer in a worker.
+- `PageGrid` / `PageThumb` (S3) with drag **and** keyboard reorder, multi-select,
+  per-page rotate/delete.
+- `fflate` for zipped multi-file outputs.
+- Range-expression parser (`1-3,5,8-`) + tests.
+- Chaining (result → next tool) implemented here first.
+
+**Done when:** all six tools pass acceptance criteria in
+[`02-feature-spec.md`](02-feature-spec.md); a 200-page file reorders smoothly.
+
+---
+
+## M2 — Edit 🟢
+
+Annotate/overlay, Watermark, Page numbers, Crop, Rotate.
+
+- Edit canvas (S4): object layer over `pdf.js` render; select/move/resize/delete;
+  undo–redo; multi-page nav.
+- Vector flatten where possible; transparent-PNG overlay fallback.
+- Bundled fonts embedded/subset on export.
+- Crop: marquee + numeric + auto-whitespace detection.
+
+**Done when:** exported PDFs show overlays correctly in third-party viewers;
+watermark tiling/opacity/range all correct.
+
+---
+
+## M3 — Optimize 🟢
+
+Compress (MIT path), OCR (Tesseract), Repair (best-effort).
+
+- Compress: canvas image re-encode + downsample + object-stream rewrite +
+  metadata strip; presets; before/after report; revert.
+- OCR: `tesseract.js` in a worker; `pdf.js` page raster → text layer; per-page
+  progress; cancellable; bundled English + selectable packs.
+- **COOP/COEP:** M5 needs `require-corp` globally for LibreOffice-WASM anyway
+  (ADR-011); if threaded OCR wants it sooner, bring it forward here. `CORP:
+  same-origin` on every asset makes it safe. Decision recorded per Q4.
+- Repair: tolerant `pdf-lib` reload → `pdf.js` reconstruction fallback; honest
+  "couldn't repair" outcome.
+
+**Done when:** typical scanned PDF becomes searchable; compress shows real
+savings on image-heavy PDFs; repair fixes broken-xref samples.
+
+---
+
+## M4 — Unlock 🟢
+
+- `qpdf` WASM vendored with checksum; `--decrypt --password`.
+- S5 flow: needs-password / wrong-password / restrictions-only / success.
+- Refusal copy for cracking; ethics/consent line.
+
+**Done when:** correct password → clean unprotected PDF; wrong password → clear
+error, no output; nothing logged.
+
+---
+
+## M5 — Convert to PDF 🟢 / 🔵 / ⚙️ (all in-browser)
+
+- Images→PDF 🟢: `pdf-lib` embed + canvas/`utif` decode; layout options.
+- HTML→PDF 🔵: sandboxed `srcdoc` + `paged.js` + `html2canvas`/`jsPDF`;
+  inline-assets-only.
+- **Office→PDF Tier 1 (🔵, default):** `docx-preview` (Word), `SheetJS` + table
+  render (Excel), `PPTXjs` / `pptx-preview` (PowerPoint) → `jsPDF`. Each engine
+  code-split and lazy-loaded. Preview-before-export; honest fidelity copy.
+  Decide the PPTX renderer here (Q7).
+- **Office→PDF Tier 2 (⚙️, opt-in):** integrate **LibreOffice WASM (ZetaJS)** —
+  vendored + `SHA256SUMS`, lazy-loaded behind the "~100–250 MB, one time" prompt,
+  runs in a dedicated Worker, feature-detected (cross-origin isolation + RAM).
+  Confirm COOP/COEP headers give `crossOriginIsolated === true`.
+- S6 states: fidelity-warning, too-large, engine-load-failed, tier-unavailable.
+
+**Done when:** `.docx/.pptx/.xlsx` samples convert in Tier 1 with correct content;
+Tier 2 matches LibreOffice; DevTools shows **zero uploads** for both tiers on all
+target browsers; Tier 2 is cleanly hidden where it can't run.
+
+---
+
+## M6 — Hardening & launch
+
+- `security-review` skill on the whole branch; resolve all high/critical.
+- Full pre-launch checklist in [`05-security-and-privacy.md`](05-security-and-privacy.md).
+- Lighthouse/perf pass; first-load budget check (every engine lazy-loaded, none
+  in the entry chunk); verify the LibreOffice-WASM download is gated behind the
+  opt-in click.
+- `run` skill to drive the real app and capture screenshots for the README/About.
+- Deploy the static bundle per [`07-deployment.md`](07-deployment.md) (Vercel or
+  Cloudflare Pages), custom domain, run the post-deploy verification checklist.
+- Write the friends-facing one-paragraph "what this is / how to trust it".
+- `update-config` skill: add guardrail hooks (block deps that add analytics /
+  third-party origins / a server framework; run typecheck+lint on stop).
+
+**Done when:** live HTTPS URL, all checklists green, a non-technical friend uses
+it unaided.
+
+---
+
+## Post-launch backlog (not scheduled)
+
+- PWA app-shell offline cache (shell only; strict SW route guard).
+- Static-host access gate (passphrase) if the circle grows (ADR-003 escalation).
+- More OCR language packs.
+- i18n of the UI.
+- Re-evaluate the PPTX renderer / Office Tier-1 engines as they mature.
+
+---
+
+## Risk register
+
+| Risk | Likelihood | Impact | Mitigation |
+| --- | --- | --- | --- |
+| Office→PDF Tier 1 fidelity disappoints vs Microsoft (esp. PPTX) | High | Med | Preview-before-export + honest copy; offer the LibreOffice-WASM tier; suggest "print to PDF from the source app" as a last resort |
+| LibreOffice-WASM too heavy for a user's device (RAM / mobile) | Med | Med | Feature-detect and hide it; Tier 1 always available; document the limitation |
+| ~100–250 MB engine download deters use / first-run cost | Med | Low | Gate behind an explicit click; cache aggressively; show size up front |
+| Large files exhaust browser memory (esp. iOS Safari) | Med | Med | Pre-run size checks; suggest Split; workers; documented limitation |
+| `pdf-lib` upstream stays unmaintained | Med | Med | Adopt `@cantoo/pdf-lib` fork; wrappers isolate the dependency |
+| AGPL creep if Ghostscript/MuPDF get pulled into the bundle | Low | Med | Policy: kept out; there's no server to run them on; ADR required to revisit |
+| COOP/COEP (`require-corp`) breaks an asset | Low | Low | Every asset same-origin + `CORP: same-origin`; fallback = scope the headers to WASM routes (ADR, Q4) |
+| Malicious Office/PDF file exploits an in-browser parser | Low | High | Parse in a Worker; script-disabled sandboxed iframe for render steps; no `eval` of bytes; size/page guards; keep engines patched |
+| Static host tampers with the served bundle | Low | Med | Public repo; immutable git-SHA deploys; SRI + `SHA256SUMS`; browser tools make no network calls (verifiable) |
+| Solo maintainer bandwidth | High | Med | Small scope; zero infra/ops now; friends can help via the public repo |
