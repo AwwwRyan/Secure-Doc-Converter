@@ -7,7 +7,7 @@ import { RemoveOptions } from '@/tools/options/RemoveOptions';
 import { RotateOptions } from '@/tools/options/RotateOptions';
 import { SplitOptions } from '@/tools/options/SplitOptions';
 import { WatermarkOptions } from '@/tools/options/WatermarkOptions';
-import { OrganizeShell } from '@/tools/lazy-shells';
+import { EditShell, OrganizeShell } from '@/tools/lazy-shells';
 
 export type ToolOptions = Record<string, unknown>;
 
@@ -83,7 +83,7 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
     action: 'Add watermark',
     defaultOptions: {
       op: 'watermark',
-      text: '',
+      text: 'CONFIDENTIAL',
       layout: 'center',
       fontSize: 60,
       rotationDeg: 45,
@@ -93,6 +93,7 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
       range: '',
     },
     Options: WatermarkOptions as ComponentType<OptionsProps>,
+    CustomShell: EditShell,
   },
   'page-numbers': {
     workerId: 'edit',
@@ -110,6 +111,7 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
       range: '',
     },
     Options: PageNumberOptions as ComponentType<OptionsProps>,
+    CustomShell: EditShell,
   },
   crop: {
     workerId: 'edit',
@@ -126,6 +128,7 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
       range: '',
     },
     Options: CropOptions as ComponentType<OptionsProps>,
+    CustomShell: EditShell,
   },
   'rotate-edit': {
     workerId: 'organize',

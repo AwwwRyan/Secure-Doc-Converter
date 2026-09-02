@@ -7,3 +7,7 @@ import { lazy } from 'react';
 export const OrganizeShell = lazy(() =>
   import('@/tools/shells/OrganizeShell').then((m) => ({ default: m.OrganizeShell })),
 );
+
+export const EditShell = lazy(() =>
+  import('@/tools/shells/EditShell').then((m) => ({ default: m.EditShell })),
+);

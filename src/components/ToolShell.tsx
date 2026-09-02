@@ -1,16 +1,14 @@
 import { useState } from 'react';
-import type { DragEvent } from 'react';
-import { Link } from 'react-router';
-import { ChevronLeft, Upload } from 'lucide-react';
 import type { ToolDef } from '@/lib/tools/types';
 import type { ToolConfig } from '@/tools/registry';
 import { useSession } from '@/lib/store/session';
 import { useToolRun } from '@/lib/hooks/useToolRun';
 import { FileList } from '@/components/FileList';
+import { FileDropzone } from '@/components/FileDropzone';
 import { ResultCard } from '@/components/ResultCard';
+import { ToolHeader } from '@/components/ToolHeader';
 import { PrivacyBadge } from '@/components/PrivacyBadge';
 import { Button } from '@/ui/Button';
-import { cn } from '@/ui/cn';
 
 export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig }) {
   const files = useSession((s) => s.files);
@@ -24,36 +22,18 @@ export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig 
 
   const { run, cancel } = useToolRun(config.workerId);
   const [options, setOptions] = useState<Record<string, unknown>>(config.defaultOptions);
-  const [dragging, setDragging] = useState(false);
 
   const busy = status === 'preparing' || status === 'running';
   const done = status === 'done';
   const Options = config.Options;
 
-  function accept(list: FileList | File[]) {
-    const picked = Array.from(list);
-    addFiles(config.multiple ? picked : picked.slice(0, 1));
-  }
-
-  function onDrop(e: DragEvent) {
-    e.preventDefault();
-    setDragging(false);
-    if (busy) return;
-    accept(e.dataTransfer.files);
+  function accept(list: File[]) {
+    addFiles(config.multiple ? list : list.slice(0, 1));
   }
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 text-[12.5px] text-muted hover:text-ink"
-        >
-          <ChevronLeft size={13} /> All tools
-        </Link>
-        <h1 className="text-[21px] font-bold tracking-tight text-ink">{tool.name}</h1>
-        <p className="text-[13px] text-muted">{tool.blurb}. Runs entirely in your browser.</p>
-      </div>
+      <ToolHeader name={tool.name} blurb={tool.blurb} />
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px]">
         <div className="flex flex-col gap-4">
@@ -72,33 +52,13 @@ export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig 
           )}
 
           {(config.multiple || files.length === 0) && (
-            <label
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragging(true);
-              }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={onDrop}
-              className={cn(
-                'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line px-6 py-8 text-center text-[12.5px] text-faint transition-colors',
-                dragging && 'border-accent bg-accent-wash text-accent',
-                busy && 'pointer-events-none opacity-50',
-              )}
-            >
-              <Upload size={18} strokeWidth={1.6} />
-              {files.length > 0 ? 'Add another PDF, or browse' : 'Drop a PDF here, or browse'}
-              <input
-                type="file"
-                accept="application/pdf,.pdf"
-                multiple={config.multiple}
-                className="sr-only"
-                disabled={busy}
-                onChange={(e) => {
-                  if (e.target.files) accept(e.target.files);
-                  e.target.value = '';
-                }}
-              />
-            </label>
+            <FileDropzone
+              multiple={config.multiple}
+              hasFiles={files.length > 0}
+              disabled={busy}
+              onFiles={accept}
+              compact
+            />
           )}
 
           {Options && (

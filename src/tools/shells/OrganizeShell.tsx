@@ -1,76 +1,29 @@
-import { useState } from 'react';
-import type { DragEvent } from 'react';
-import { Link } from 'react-router';
-import { ChevronLeft, Upload } from 'lucide-react';
-import type { ToolDef } from '@/lib/tools/types';
 import { useSession } from '@/lib/store/session';
 import { useToolRun } from '@/lib/hooks/useToolRun';
 import { usePdfThumbs } from '@/lib/hooks/usePdfThumbs';
 import { usePageModel } from '@/lib/hooks/usePageModel';
+import type { ToolDef } from '@/lib/tools/types';
 import { PageGrid } from '@/components/pagegrid/PageGrid';
 import { ResultCard } from '@/components/ResultCard';
+import { ToolHeader } from '@/components/ToolHeader';
+import { FileDropzone } from '@/components/FileDropzone';
 import { PrivacyBadge } from '@/components/PrivacyBadge';
 import { Button } from '@/ui/Button';
-import { cn } from '@/ui/cn';
 
 export function OrganizeShell({ tool }: { tool: ToolDef }) {
   const files = useSession((s) => s.files);
+  const addFiles = useSession((s) => s.addFiles);
   const first = files[0];
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 text-[12.5px] text-muted hover:text-ink"
-        >
-          <ChevronLeft size={13} /> All tools
-        </Link>
-        <h1 className="text-[21px] font-bold tracking-tight text-ink">{tool.name}</h1>
-        <p className="text-[13px] text-muted">{tool.blurb}. Runs entirely in your browser.</p>
-      </div>
-
-      {first ? <Loaded key={`${first.id}`} tool={tool} file={first.file} /> : <Dropzone />}
-    </div>
-  );
-}
-
-function Dropzone() {
-  const addFiles = useSession((s) => s.addFiles);
-  const [dragging, setDragging] = useState(false);
-  function accept(list: FileList | File[]) {
-    const f = Array.from(list)[0];
-    if (f) addFiles([f]);
-  }
-  return (
-    <label
-      onDragOver={(e: DragEvent) => {
-        e.preventDefault();
-        setDragging(true);
-      }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={(e: DragEvent) => {
-        e.preventDefault();
-        setDragging(false);
-        accept(e.dataTransfer.files);
-      }}
-      className={cn(
-        'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line px-6 py-12 text-center text-[12.5px] text-faint transition-colors',
-        dragging && 'border-accent bg-accent-wash text-accent',
+      <ToolHeader name={tool.name} blurb={tool.blurb} />
+      {first ? (
+        <Loaded key={first.id} tool={tool} file={first.file} />
+      ) : (
+        <FileDropzone multiple={false} hasFiles={false} onFiles={(f) => f[0] && addFiles([f[0]])} />
       )}
-    >
-      <Upload size={18} strokeWidth={1.6} />
-      Drop a PDF here, or browse
-      <input
-        type="file"
-        accept="application/pdf,.pdf"
-        className="sr-only"
-        onChange={(e) => {
-          if (e.target.files) accept(e.target.files);
-          e.target.value = '';
-        }}
-      />
-    </label>
+    </div>
   );
 }
 

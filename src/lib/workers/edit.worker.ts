@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import * as Comlink from 'comlink';
 import type { ProgressFn, RunResult, ToolWorkerApi } from '@/lib/workers/types';
-import { pageCount } from '@/lib/pdf/organize';
+import { extractPages, pageCount } from '@/lib/pdf/organize';
 import { parsePageRange } from '@/lib/pdf/range';
 import {
   crop,
@@ -37,9 +37,17 @@ async function resolvePages(range: string, first: ArrayBuffer): Promise<number[]
 
 const api: ToolWorkerApi = {
   async run(inputs, options, onProgress: ProgressFn): Promise<RunResult> {
-    const first = inputs[0];
+    let first = inputs[0];
     if (!first) throw new Error('No file provided.');
     const op = str(options['op']);
+
+    // Live preview: apply the effect to page 1 only. The range field is ignored
+    // so the preview always shows something.
+    const preview = options['preview'] === true;
+    if (preview) {
+      first = await extractPages(first, [1]);
+      options = { ...options, range: '' };
+    }
 
     if (op === 'watermark') {
       const bytes = await watermark(

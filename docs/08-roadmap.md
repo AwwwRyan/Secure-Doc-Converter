@@ -72,12 +72,20 @@ Merge, Split, Remove pages, Extract pages, Organize/Reorder, Rotate.
 
 Annotate/overlay, Watermark, Page numbers, Crop, Rotate.
 
-**Status: M2a done** — Watermark (text; centred/tiled/banner; angle, opacity,
-colour, page range), Page numbers (4 formats, 6 positions, start-at, skip-first,
-range), Crop (uniform or per-side margins in pt or %), Rotate (reuses the M1
-engine). All pdf-lib drawing in a code-split `edit` worker; Helvetica standard
-font (embedded fonts for non-Latin text = later). **M2b** (next): the
-annotate/overlay canvas (text boxes, ink, shapes, images) — its own focused pass.
+**Status: M2a + M2b done.**
+
+- M2a — Watermark (centred/tiled/banner; angle, opacity, colour, range), Page
+  numbers (4 formats, 6 positions, start-at, skip-first, range), Crop (uniform
+  or per-side margins, pt or %), Rotate. pdf-lib drawing in a code-split `edit`
+  worker; Helvetica standard font.
+- M2b — **live single-page preview** for Watermark / Page numbers / Crop
+  (`EditShell` + `usePreview`): runs the real op on page 1 only, debounced,
+  rendered via pdf.js — the preview is the same code as the download so it can't
+  drift. Shared `ToolHeader` / `FileDropzone` extracted; `ToolShell` and
+  `OrganizeShell` moved onto them.
+- Deferred: the **annotate/overlay canvas** (text boxes, ink, shapes, images) —
+  D1 in the feature spec; its own milestone. Embedded fonts for non-Latin
+  watermark/number text.
 
 - Edit canvas (S4): object layer over `pdf.js` render; select/move/resize/delete;
   undo–redo; multi-page nav.

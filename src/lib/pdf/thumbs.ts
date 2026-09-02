@@ -13,6 +13,30 @@ export interface Thumb {
 }
 
 /**
+ * One-shot render of a document's first page to a self-contained data URL
+ * (no cleanup needed). Used for the Edit tools' live preview.
+ */
+export async function renderFirstPage(bytes: ArrayBuffer, targetWidth = 560): Promise<string> {
+  const task = pdfjs.getDocument({ data: bytes.slice(0) });
+  try {
+    const doc = await task.promise;
+    const pdfPage = await doc.getPage(1);
+    const base = pdfPage.getViewport({ scale: 1 });
+    const viewport = pdfPage.getViewport({ scale: targetWidth / base.width });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('2d canvas unavailable');
+    await pdfPage.render({ canvasContext: ctx, viewport, canvas }).promise;
+    pdfPage.cleanup();
+    return canvas.toDataURL('image/png');
+  } finally {
+    void task.destroy();
+  }
+}
+
+/**
  * Lazily renders page thumbnails for one PDF. pdf.js parses in its own worker;
  * we rasterise on demand (the grid only asks for visible pages) and hand back
  * object URLs the caller must revoke.
