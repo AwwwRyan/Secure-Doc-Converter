@@ -22,16 +22,20 @@ instead of `vercel.json`, `_redirects` for SPA fallback).
 
 A friend just loads a URL. Nothing to install, no accounts.
 
+**Gotcha (hit on the first deploy):** do **not** set `"cleanUrls": true` in
+`vercel.json` alongside the catch-all rewrite. `cleanUrls` 308-redirects
+`/index.html` → `/`, which is the rewrite's own destination, so every deep
+link / refresh (`/t/merge`, `/about`, …) fell through to Vercel's 404. The
+plain `rewrites: [{ "source": "/(.*)", "destination": "/index.html" }]` with
+no `cleanUrls` is the working config.
+
 ## `vercel.json`
 
 ```json
 {
   "buildCommand": "pnpm build",
   "outputDirectory": "dist",
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/((?!assets/|vendor/).*)", "destination": "/index.html" }
-  ],
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/(.*)",
@@ -39,6 +43,7 @@ A friend just loads a URL. Nothing to install, no accounts.
         { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" },
         { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "Referrer-Policy", "value": "no-referrer" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
@@ -61,6 +66,7 @@ A friend just loads a URL. Nothing to install, no accounts.
   Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Cross-Origin-Opener-Policy: same-origin
