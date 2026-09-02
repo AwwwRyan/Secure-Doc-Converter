@@ -1,4 +1,12 @@
-import { degrees, PDFDocument, rgb, StandardFonts } from '@cantoo/pdf-lib';
+import {
+  PDFDocument,
+  popGraphicsState,
+  pushGraphicsState,
+  rgb,
+  rotateRadians,
+  StandardFonts,
+  translate,
+} from '@cantoo/pdf-lib';
 import { CorruptPdfError, EmptyResultError, EncryptedPdfError } from '@/lib/pdf/errors';
 
 export type Progress = (fraction: number) => void;
@@ -86,42 +94,48 @@ export async function watermark(
   const pages = doc.getPages();
   const targets = targetSet(o.pages, pages.length);
   const color = rgb(o.color.r, o.color.g, o.color.b);
-  const rad = (o.rotationDeg * Math.PI) / 180;
+
+  // Banners are horizontal by definition; only centre / tile use the angle.
+  const banner = o.layout === 'top' || o.layout === 'bottom';
+  const angleRad = banner ? 0 : (o.rotationDeg * Math.PI) / 180;
 
   pages.forEach((page, i) => {
     if (!targets.has(i)) return;
     const pw = page.getWidth();
     const ph = page.getHeight();
     const tw = font.widthOfTextAtSize(o.text, o.fontSize);
-    const th = font.heightAtSize(o.fontSize);
-    const common = {
-      size: o.fontSize,
-      font,
-      color,
-      opacity: o.opacity,
-      rotate: degrees(o.rotationDeg),
-    };
 
-    const drawCentredAt = (cx: number, cy: number, angle: number) => {
-      // pdf-lib rotates the text about its (x, y) origin (baseline-left).
-      const hx = tw / 2;
-      const hy = th * 0.35;
-      const x = cx - (hx * Math.cos(angle) - hy * Math.sin(angle));
-      const y = cy - (hx * Math.sin(angle) + hy * Math.cos(angle));
-      page.drawText(o.text, { ...common, x, y });
+    /**
+     * Stamp the text so its visual centre lands exactly at (cx, cy), rotated
+     * about that point. `translate` then `rotateRadians` composes to
+     * "rotate about (cx, cy)"; the text is then drawn centred on the local
+     * origin.
+     */
+    const stamp = (cx: number, cy: number) => {
+      page.pushOperators(pushGraphicsState(), translate(cx, cy), rotateRadians(angleRad));
+      page.drawText(o.text, {
+        x: -tw / 2,
+        y: -o.fontSize * 0.34, // baseline offset so the glyph body straddles y=0
+        size: o.fontSize,
+        font,
+        color,
+        opacity: o.opacity,
+      });
+      page.pushOperators(popGraphicsState());
     };
 
     if (o.layout === 'tile') {
-      const step = Math.max(tw, o.fontSize) * 1.8;
-      for (let y = -ph; y < ph * 2; y += step) {
-        for (let x = -pw; x < pw * 2; x += step) drawCentredAt(x, y, rad);
+      const stepX = Math.max(tw * 0.9 + o.fontSize, 150);
+      const stepY = Math.max(o.fontSize * 3.4, 120);
+      for (let y = stepY / 2; y < ph + stepY; y += stepY) {
+        for (let x = stepX / 2; x < pw + stepX; x += stepX) stamp(x, y);
       }
     } else if (o.layout === 'top') {
-      drawCentredAt(pw / 2, ph - o.fontSize * 1.6, 0);
+      stamp(pw / 2, ph - Math.max(o.fontSize, 26));
     } else if (o.layout === 'bottom') {
-      drawCentredAt(pw / 2, o.fontSize * 1.2, 0);
+      stamp(pw / 2, Math.max(o.fontSize * 0.9, 22));
     } else {
-      drawCentredAt(pw / 2, ph / 2, rad);
+      stamp(pw / 2, ph / 2);
     }
     onProgress((i + 1) / pages.length);
   });
