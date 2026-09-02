@@ -14,6 +14,8 @@ export interface ResultFile {
   url: string;
   /** Kept so a .zip can be built on demand without re-fetching. */
   bytes: ArrayBuffer;
+  /** Optional one-liner shown under the result (e.g. compression summary). */
+  note?: string;
 }
 
 interface SessionState {

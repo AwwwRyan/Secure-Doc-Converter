@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import type { ToolDef } from '@/lib/tools/types';
+import { CompressOptions } from '@/tools/options/CompressOptions';
 import { CropOptions } from '@/tools/options/CropOptions';
 import { ExtractOptions } from '@/tools/options/ExtractOptions';
 import { PageNumberOptions } from '@/tools/options/PageNumberOptions';
@@ -136,6 +137,21 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
     action: 'Rotate',
     defaultOptions: { op: 'rotate', angle: 90, scope: 'all', range: '' },
     Options: RotateOptions as ComponentType<OptionsProps>,
+  },
+
+  // ---- Optimize (M3a) ----
+  compress: {
+    workerId: 'optimize',
+    multiple: false,
+    action: 'Compress',
+    defaultOptions: { op: 'compress', preset: 'balanced' },
+    Options: CompressOptions as ComponentType<OptionsProps>,
+  },
+  repair: {
+    workerId: 'optimize',
+    multiple: false,
+    action: 'Repair PDF',
+    defaultOptions: { op: 'repair' },
   },
 };
 

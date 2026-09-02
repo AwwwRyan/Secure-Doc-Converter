@@ -49,13 +49,19 @@ export function useToolRun(workerId: string) {
 
         const parts =
           out.kind === 'file'
-            ? [{ name: out.name, bytes: out.bytes, mime: out.mime }]
-            : out.files.map((f) => ({ name: f.name, bytes: f.bytes, mime: 'application/pdf' }));
+            ? [{ name: out.name, bytes: out.bytes, mime: out.mime, note: out.note }]
+            : out.files.map((f) => ({
+                name: f.name,
+                bytes: f.bytes,
+                mime: 'application/pdf',
+                note: undefined as string | undefined,
+              }));
 
         const result: ResultFile[] = parts.map((p) => ({
           name: p.name,
           bytes: p.bytes,
           url: URL.createObjectURL(new Blob([p.bytes], { type: p.mime })),
+          ...(p.note ? { note: p.note } : {}),
         }));
         setResult(result);
       } catch (err) {

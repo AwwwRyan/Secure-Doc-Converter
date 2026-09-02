@@ -16,6 +16,7 @@ const WORKER_FACTORIES: Record<string, () => Worker> = {
   demo: () => new Worker(new URL('./demo.worker.ts', import.meta.url), { type: 'module' }),
   organize: () => new Worker(new URL('./organize.worker.ts', import.meta.url), { type: 'module' }),
   edit: () => new Worker(new URL('./edit.worker.ts', import.meta.url), { type: 'module' }),
+  optimize: () => new Worker(new URL('./optimize.worker.ts', import.meta.url), { type: 'module' }),
 };
 
 export function createWorker(workerId: string): ToolWorkerHandle {

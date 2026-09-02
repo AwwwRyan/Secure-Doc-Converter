@@ -102,6 +102,19 @@ watermark tiling/opacity/range all correct.
 
 Compress (MIT path), OCR (Tesseract), Repair (best-effort).
 
+**Status: M3a done** — Compress and Repair.
+
+- Compress (`src/lib/pdf/optimize.ts`): always strips metadata + repacks with
+  object streams; Balanced/Smallest presets also re-encode embedded **JPEG
+  (DCTDecode)** images via `OffscreenCanvas` (quality + optional downscale).
+  Other image types are left untouched (conservative MIT-only path, ADR-006).
+  Result card shows "X MB → Y MB · N% smaller · k images recompressed".
+  Verified: a 3.4 MB photo PDF → 1.7 MB, pages intact.
+- Repair: tolerant reload (`throwOnInvalidObject: false`) + re-serialise;
+  clear error when even that fails. Verified against trailing-junk + garbage.
+- `RunResult.file` + `ResultFile` gained an optional `note`.
+- **M3b** (next): OCR with `tesseract.js`.
+
 - Compress: canvas image re-encode + downsample + object-stream rewrite +
   metadata strip; presets; before/after report; revert.
 - OCR: `tesseract.js` in a worker; `pdf.js` page raster → text layer; per-page

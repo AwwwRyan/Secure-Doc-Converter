@@ -95,7 +95,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'optimize',
     blurb: 'Shrink file size, keep quality',
     icon: SlidersHorizontal,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
   {
@@ -113,7 +113,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'optimize',
     blurb: 'Recover a damaged file',
     icon: Wand2,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
 

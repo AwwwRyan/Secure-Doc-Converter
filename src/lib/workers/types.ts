@@ -13,7 +13,7 @@ export interface RunResultFile {
  * into one `.zip` for download.
  */
 export type RunResult =
-  | { kind: 'file'; name: string; mime: string; bytes: ArrayBuffer }
+  | { kind: 'file'; name: string; mime: string; bytes: ArrayBuffer; note?: string }
   | { kind: 'files'; files: RunResultFile[] };
 
 /**

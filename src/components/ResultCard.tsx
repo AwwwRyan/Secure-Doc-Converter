@@ -70,6 +70,9 @@ export function ResultCard({
       ) : (
         <>
           <span className="truncate text-[12.5px] text-muted">{result[0]!.name}</span>
+          {result[0]!.note && (
+            <span className="text-[12px] font-medium text-good-ink">{result[0]!.note}</span>
+          )}
           <a
             href={result[0]!.url}
             download={result[0]!.name}
