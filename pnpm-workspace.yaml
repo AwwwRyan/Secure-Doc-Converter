@@ -3,4 +3,7 @@
 # needs are vendored under public/vendor/tesseract/ (scripts/vendor-tesseract.mjs).
 # Declaring the decision here stops pnpm treating the skipped build as an error.
 allowBuilds:
+  # postinstall is a console ad; nothing needed
+  core-js: false
+  # we vendor the exact files (see comment above)
   tesseract.js: false

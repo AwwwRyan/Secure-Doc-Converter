@@ -122,9 +122,9 @@ export const TOOLS: readonly ToolDef[] = [
     id: 'image-to-pdf',
     name: 'Images → PDF',
     category: 'convert',
-    blurb: 'JPG, PNG, WebP, TIFF',
+    blurb: 'JPG, PNG, WebP, GIF, BMP',
     icon: FileImage,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
   {
@@ -143,7 +143,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'convert',
     blurb: 'From a self-contained page',
     icon: FileText,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
 

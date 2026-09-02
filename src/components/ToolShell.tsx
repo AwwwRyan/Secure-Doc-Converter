@@ -57,6 +57,8 @@ export function ToolShell({ tool, config }: { tool: ToolDef; config: ToolConfig 
               hasFiles={files.length > 0}
               disabled={busy}
               onFiles={accept}
+              accept={config.accept ?? 'application/pdf,.pdf'}
+              noun={config.fileNoun ?? 'PDF'}
               compact
             />
           )}

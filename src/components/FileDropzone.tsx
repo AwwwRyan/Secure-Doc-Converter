@@ -9,12 +9,16 @@ export function FileDropzone({
   disabled,
   onFiles,
   compact,
+  accept = 'application/pdf,.pdf',
+  noun = 'PDF',
 }: {
   multiple: boolean;
   hasFiles: boolean;
   disabled?: boolean;
   onFiles: (files: File[]) => void;
   compact?: boolean;
+  accept?: string;
+  noun?: string;
 }) {
   const [dragging, setDragging] = useState(false);
 
@@ -38,10 +42,12 @@ export function FileDropzone({
       )}
     >
       <Upload size={18} strokeWidth={1.6} />
-      {hasFiles ? 'Add another PDF, or browse' : 'Drop a PDF here, or browse'}
+      {hasFiles
+        ? `Add another ${noun}, or browse`
+        : `Drop ${noun === 'PDF' ? 'a PDF' : noun} here, or browse`}
       <input
         type="file"
-        accept="application/pdf,.pdf"
+        accept={accept}
         multiple={multiple}
         className="sr-only"
         disabled={disabled}

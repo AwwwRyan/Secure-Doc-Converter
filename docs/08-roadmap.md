@@ -162,19 +162,30 @@ errors.
 
 ---
 
-## M5 — Convert to PDF 🟢 / 🔵 / ⚙️ (all in-browser)
+**Status: M5a done** — Images→PDF and HTML→PDF.
 
-- Images→PDF 🟢: `pdf-lib` embed + canvas/`utif` decode; layout options.
-- HTML→PDF 🔵: sandboxed `srcdoc` + `paged.js` + `html2canvas`/`jsPDF`;
-  inline-assets-only.
-- **Office→PDF Tier 1 (🔵, default):** `docx-preview` (Word), `SheetJS` + table
-  render (Excel), `PPTXjs` / `pptx-preview` (PowerPoint) → `jsPDF`. Each engine
-  code-split and lazy-loaded. Preview-before-export; honest fidelity copy.
-  Decide the PPTX renderer here (Q7).
-- **Office→PDF Tier 2 (⚙️, opt-in):** integrate **LibreOffice WASM (ZetaJS)** —
-  vendored + `SHA256SUMS`, lazy-loaded behind the "~100–250 MB, one time" prompt,
-  runs in a dedicated Worker, feature-detected (cross-origin isolation + RAM).
-  Confirm COOP/COEP headers give `crossOriginIsolated === true`.
+- M5a — **Images→PDF** 🟢 (`src/lib/pdf/imageToPdf.ts` in a code-split `convert`
+  worker): one image per page, list order. JPEG/PNG embed directly; anything
+  else the browser can decode (WebP/GIF/BMP) goes through `OffscreenCanvas` →
+  PNG first. Options: page size (fit-to-image / A4 / Letter), orientation
+  (auto / portrait / landscape), margin (pt), white background behind
+  transparent images. Verified: 3 colour-coded images → 3-page PDF, each image
+  centred and unclipped (rendered + eyeballed).
+- M5a — **HTML→PDF** 🔵 (`src/lib/convert/htmlToPdf.ts`, main thread — needs the
+  DOM): markup loaded into a **sandboxed, script-disabled** `<iframe srcdoc>`;
+  the page CSP already blocks external CSS/JS/images so only inline + `data:`
+  assets render (a safety property). `html2canvas` rasterises, `jsPDF` slices
+  the tall image across A4/Letter pages with a configurable margin. `HtmlShell`
+  = textarea or `.html` upload + page-size / margin. Verified: a styled report
+  (heading, callout box, table, long copy) → 2-page PDF, layout + colours +
+  pagination correct (rendered + eyeballed).
+- M5b (next) — **Office→PDF Tier 1 (🔵, default):** `docx-preview` (Word),
+  `SheetJS` + table render (Excel), `pptx-preview` (PowerPoint) → `jsPDF`. Each
+  engine code-split and lazy-loaded. Preview-before-export; honest fidelity copy.
+- M5c — **Office→PDF Tier 2 (⚙️, opt-in):** integrate **LibreOffice WASM
+  (ZetaJS)** — vendored + `SHA256SUMS`, lazy-loaded behind the "~100–250 MB, one
+  time" prompt, runs in a dedicated Worker, feature-detected (cross-origin
+  isolation + RAM). Confirm COOP/COEP headers give `crossOriginIsolated === true`.
 - S6 states: fidelity-warning, too-large, engine-load-failed, tier-unavailable.
 
 **Done when:** `.docx/.pptx/.xlsx` samples convert in Tier 1 with correct content;

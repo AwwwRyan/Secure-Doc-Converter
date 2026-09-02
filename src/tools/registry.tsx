@@ -3,13 +3,14 @@ import type { ToolDef } from '@/lib/tools/types';
 import { CompressOptions } from '@/tools/options/CompressOptions';
 import { CropOptions } from '@/tools/options/CropOptions';
 import { ExtractOptions } from '@/tools/options/ExtractOptions';
+import { ImageToPdfOptions } from '@/tools/options/ImageToPdfOptions';
 import { PageNumberOptions } from '@/tools/options/PageNumberOptions';
 import { RemoveOptions } from '@/tools/options/RemoveOptions';
 import { RotateOptions } from '@/tools/options/RotateOptions';
 import { SplitOptions } from '@/tools/options/SplitOptions';
 import { UnlockOptions } from '@/tools/options/UnlockOptions';
 import { WatermarkOptions } from '@/tools/options/WatermarkOptions';
-import { EditShell, OcrShell, OrganizeShell } from '@/tools/lazy-shells';
+import { EditShell, HtmlShell, OcrShell, OrganizeShell } from '@/tools/lazy-shells';
 
 export type ToolOptions = Record<string, unknown>;
 
@@ -29,6 +30,10 @@ export interface ToolConfig {
   readonly Options?: ComponentType<OptionsProps>;
   /** Replaces the generic ToolShell entirely (e.g. the page-grid editor). Lazy. */
   readonly CustomShell?: ComponentType<{ tool: ToolDef }>;
+  /** File input `accept` (default: PDF). */
+  readonly accept?: string;
+  /** Noun for dropzone copy (default: "PDF"). */
+  readonly fileNoun?: string;
 }
 
 /**
@@ -160,6 +165,30 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
     action: 'Run OCR',
     defaultOptions: {},
     CustomShell: OcrShell,
+  },
+
+  // ---- Convert to PDF (M5) ----
+  'image-to-pdf': {
+    workerId: 'convert',
+    multiple: true,
+    action: 'Create PDF',
+    accept: 'image/*',
+    fileNoun: 'image',
+    defaultOptions: {
+      op: 'image-to-pdf',
+      pageSize: 'fit',
+      orientation: 'auto',
+      margin: 0,
+      background: true,
+    },
+    Options: ImageToPdfOptions as ComponentType<OptionsProps>,
+  },
+  'html-to-pdf': {
+    workerId: 'convert', // unused — HtmlShell runs on the main thread (needs the DOM)
+    multiple: false,
+    action: 'Convert to PDF',
+    defaultOptions: {},
+    CustomShell: HtmlShell,
   },
 
   // ---- Unlock (M4) ----
