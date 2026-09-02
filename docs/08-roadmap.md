@@ -162,7 +162,7 @@ errors.
 
 ---
 
-**Status: M5a done** — Images→PDF and HTML→PDF.
+**Status: M5a + M5b done** — Images, HTML and Office (lightweight tier).
 
 - M5a — **Images→PDF** 🟢 (`src/lib/pdf/imageToPdf.ts` in a code-split `convert`
   worker): one image per page, list order. JPEG/PNG embed directly; anything
@@ -179,10 +179,23 @@ errors.
   = textarea or `.html` upload + page-size / margin. Verified: a styled report
   (heading, callout box, table, long copy) → 2-page PDF, layout + colours +
   pagination correct (rendered + eyeballed).
-- M5b (next) — **Office→PDF Tier 1 (🔵, default):** `docx-preview` (Word),
-  `SheetJS` + table render (Excel), `pptx-preview` (PowerPoint) → `jsPDF`. Each
-  engine code-split and lazy-loaded. Preview-before-export; honest fidelity copy.
-- M5c — **Office→PDF Tier 2 (⚙️, opt-in):** integrate **LibreOffice WASM
+- M5b — **Office→PDF Tier 1 (🔵, default)** (`src/lib/convert/officeToPdf.ts`,
+  main thread — needs the DOM; `OfficeShell`). One file in, one PDF out; the
+  renderer for the detected type is dynamically imported so its weight only
+  loads when that type is used (`docx-preview` ≈75 kB, `xlsx`/SheetJS ≈420 kB,
+  `pptx-preview` ≈1.2 MB incl. echarts — each its own chunk). Word: one PDF page
+  per source `<section>` so pagination matches. Excel: every sheet →
+  `sheet_to_html` table, stacked, landscape. PowerPoint: one PDF page per slide,
+  landscape. Type sniff = extension then a zip part-name scan; legacy
+  `.doc/.xls/.ppt` get an honest "re-save or use the high-fidelity converter".
+  Shared rasterise+paginate helper `src/lib/convert/canvasToPdf.ts`
+  (`slicedCanvasToPdf` / `pagedCanvasesToPdf`), also now backing HTML→PDF.
+  Prominent "approximate layout" copy. Verified: `.docx` (2 source pages) →
+  2-page PDF with headings/bold/table; `.xlsx` (2 sheets) → 1-page PDF with both
+  tables; `.pptx` (3 slides) → 3-page PDF — rendered + eyeballed, no console
+  errors. New `pnpm check:origins` guardrail (allow-lists inert URL strings in
+  vendored libs, fails on any real new origin) replaces the CI grep.
+- M5c (next) — **Office→PDF Tier 2 (⚙️, opt-in):** integrate **LibreOffice WASM
   (ZetaJS)** — vendored + `SHA256SUMS`, lazy-loaded behind the "~100–250 MB, one
   time" prompt, runs in a dedicated Worker, feature-detected (cross-origin
   isolation + RAM). Confirm COOP/COEP headers give `crossOriginIsolated === true`.

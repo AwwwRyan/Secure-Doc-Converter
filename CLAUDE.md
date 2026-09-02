@@ -78,6 +78,7 @@ pnpm typecheck        # tsc -b
 pnpm lint             # eslint .
 pnpm test             # vitest run
 pnpm format           # prettier --write .
+pnpm check:origins    # fail if the built bundle references a non-allowed external origin
 pnpm vendor           # re-copy the tesseract engine into public/vendor/ from node_modules
 pnpm e2e              # playwright test  (browsers: `pnpm exec playwright install`)
 ```

@@ -38,10 +38,8 @@ jobs:
         run: pnpm build
 
       - name: No third-party origins in build
-        run: |
-          # The app must talk only to its own origin (docs/05, CLAUDE.md).
-          if grep -rIEo "https?://[a-zA-Z0-9.-]+" dist/assets \
-             | grep -vE "https?://(www\.)?(w3\.org|localhost)" ; then
-            echo "::error::found an external origin referenced in the build"
-            exit 1
-          fi
+        # The app must talk only to its own origin (docs/05, CLAUDE.md). The
+        # script allow-lists inert URL strings baked into vendored libraries
+        # (namespace URIs, license banners, dead config) and fails on anything
+        # else.
+        run: pnpm check:origins

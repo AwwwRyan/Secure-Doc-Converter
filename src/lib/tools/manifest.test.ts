@@ -43,9 +43,10 @@ describe('tool manifest', () => {
         'ocr',
         // M4 — Unlock
         'unlock',
-        // M5a — Convert to PDF
+        // M5a/b — Convert to PDF
         'image-to-pdf',
         'html-to-pdf',
+        'office-to-pdf',
       ]),
     );
   });

@@ -1,9 +1,8 @@
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+import { rasterise, slicedCanvasToPdf, type PdfPageSize } from '@/lib/convert/canvasToPdf';
 
 export interface HtmlToPdfOptions {
   html: string;
-  pageSize: 'a4' | 'letter';
+  pageSize: PdfPageSize;
   /** Margin in points. */
   margin: number;
 }
@@ -38,39 +37,10 @@ export async function htmlToPdf(o: HtmlToPdfOptions): Promise<ArrayBuffer> {
 
     const body = iframe.contentDocument?.body;
     if (!body) throw new Error('Could not read the rendered HTML.');
-    // give layout a tick
-    await new Promise((r) => setTimeout(r, 60));
+    await new Promise((r) => setTimeout(r, 60)); // give layout a tick
 
-    const canvas = await html2canvas(body, {
-      backgroundColor: '#ffffff',
-      scale: 2,
-      useCORS: false,
-      allowTaint: false,
-      windowWidth: RENDER_WIDTH,
-      width: RENDER_WIDTH,
-    });
-    if (canvas.width === 0 || canvas.height === 0) throw new Error('Nothing to render.');
-
-    const pdf = new jsPDF({ unit: 'pt', format: o.pageSize, compress: true });
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    const m = Math.min(o.margin, pageW / 3, pageH / 3);
-    const imgW = pageW - m * 2;
-    const imgH = (canvas.height / canvas.width) * imgW;
-    const usableH = pageH - m * 2;
-    const img = canvas.toDataURL('image/jpeg', 0.92);
-
-    let heightLeft = imgH;
-    let y = m;
-    pdf.addImage(img, 'JPEG', m, y, imgW, imgH);
-    heightLeft -= usableH;
-    while (heightLeft > 0) {
-      pdf.addPage();
-      y = m - (imgH - heightLeft);
-      pdf.addImage(img, 'JPEG', m, y, imgW, imgH);
-      heightLeft -= usableH;
-    }
-    return pdf.output('arraybuffer');
+    const canvas = await rasterise(body, RENDER_WIDTH);
+    return slicedCanvasToPdf(canvas, { pageSize: o.pageSize, marginPt: o.margin });
   } finally {
     iframe.remove();
   }

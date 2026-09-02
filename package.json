@@ -19,7 +19,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "check:origins": "node scripts/check-build-origins.mjs"
   },
   "dependencies": {
     "@cantoo/pdf-lib": "2.9.1",

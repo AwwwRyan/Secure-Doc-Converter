@@ -133,9 +133,9 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'convert',
     blurb: 'Office files, in your browser',
     icon: FileSpreadsheet,
-    status: 'planned',
+    status: 'ready',
     tier: 'device-dl',
-    note: 'Exact conversions download a converter the first time.',
+    note: 'A converter for your file type downloads the first time. Layout is approximate.',
   },
   {
     id: 'html-to-pdf',

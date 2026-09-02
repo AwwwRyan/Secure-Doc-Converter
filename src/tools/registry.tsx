@@ -10,7 +10,7 @@ import { RotateOptions } from '@/tools/options/RotateOptions';
 import { SplitOptions } from '@/tools/options/SplitOptions';
 import { UnlockOptions } from '@/tools/options/UnlockOptions';
 import { WatermarkOptions } from '@/tools/options/WatermarkOptions';
-import { EditShell, HtmlShell, OcrShell, OrganizeShell } from '@/tools/lazy-shells';
+import { EditShell, HtmlShell, OcrShell, OfficeShell, OrganizeShell } from '@/tools/lazy-shells';
 
 export type ToolOptions = Record<string, unknown>;
 
@@ -189,6 +189,13 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
     action: 'Convert to PDF',
     defaultOptions: {},
     CustomShell: HtmlShell,
+  },
+  'office-to-pdf': {
+    workerId: 'convert', // unused — OfficeShell runs on the main thread (needs the DOM)
+    multiple: false,
+    action: 'Convert to PDF',
+    defaultOptions: {},
+    CustomShell: OfficeShell,
   },
 
   // ---- Unlock (M4) ----
