@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { FileWarning } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { FileWarning, Sparkles } from 'lucide-react';
 import type { ToolDef } from '@/lib/tools/types';
 import { useSession } from '@/lib/store/session';
 import { officeToPdf, type OfficeKind } from '@/lib/convert/officeToPdf';
+import { libreOfficeConvert, libreOfficeStatus } from '@/lib/convert/libreoffice';
 import { ToolHeader } from '@/components/ToolHeader';
 import { FileDropzone } from '@/components/FileDropzone';
 import { ResultCard } from '@/components/ResultCard';
@@ -45,6 +46,18 @@ export function OfficeShell({ tool }: { tool: ToolDef }) {
   const [pageSize, setPageSize] = useState<'a4' | 'letter'>('a4');
   const [margin, setMargin] = useState(36);
   const [phase, setPhase] = useState('');
+  // Tier 2 (LibreOffice-WASM) is hidden unless the engine is vendored and the
+  // tab is cross-origin isolated — see ADR-012. Dormant on current deployments.
+  const [hifi, setHifi] = useState(false);
+  const [useHifi, setUseHifi] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    void libreOfficeStatus().then((s) => live && s.ok && setHifi(true));
+    return () => {
+      live = false;
+    };
+  }, []);
 
   const busy = status === 'preparing' || status === 'running';
   const done = status === 'done';
@@ -53,8 +66,24 @@ export function OfficeShell({ tool }: { tool: ToolDef }) {
     if (!first) return;
     setStatus('running');
     setProgress(0);
-    setPhase('Loading converter…');
+    setPhase(useHifi ? 'Starting LibreOffice…' : 'Loading converter…');
     try {
+      if (useHifi) {
+        const bytes = await libreOfficeConvert(first.file);
+        const kind =
+          (['docx', 'docm'].some((e) => first.name.toLowerCase().endsWith(e)) && 'word') ||
+          (['xlsx', 'xlsm'].some((e) => first.name.toLowerCase().endsWith(e)) && 'excel') ||
+          'powerpoint';
+        setResult([
+          {
+            name: OUT_NAME[kind as OfficeKind],
+            bytes,
+            url: URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })),
+            note: 'Rendered by LibreOffice.',
+          },
+        ]);
+        return;
+      }
       const { bytes, kind } = await officeToPdf(first.file, { pageSize, margin }, (frac, label) => {
         setProgress(frac);
         if (label) setPhase(label);
@@ -137,6 +166,27 @@ export function OfficeShell({ tool }: { tool: ToolDef }) {
                 Spreadsheets and slides are placed landscape automatically.
               </span>
             </div>
+
+            {hifi && (
+              <label className="flex cursor-pointer items-start gap-2.5 rounded-2xl border border-line bg-surface p-4 text-[12.5px] shadow-sm">
+                <input
+                  type="checkbox"
+                  checked={useHifi}
+                  disabled={busy}
+                  onChange={(e) => setUseHifi(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="flex items-center gap-1.5 font-semibold text-ink">
+                    <Sparkles size={13} className="text-accent" /> High-fidelity conversion
+                  </span>
+                  <span className="text-muted">
+                    Renders with LibreOffice for an exact match. Downloads a ~221&nbsp;MB engine the
+                    first time, then stays cached. Page size and margin come from the document.
+                  </span>
+                </span>
+              </label>
+            )}
           </div>
 
           <div className="flex flex-col gap-3 lg:sticky lg:top-4">

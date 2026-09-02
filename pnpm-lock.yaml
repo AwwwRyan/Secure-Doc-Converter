@@ -65,6 +65,9 @@ importers:
       xlsx:
         specifier: 0.18.5
         version: 0.18.5
+      zetajs:
+        specifier: 1.2.0
+        version: 1.2.0
       zustand:
         specifier: 5.0.15
         version: 5.0.15(@types/react@19.2.18)(react@19.2.8)
@@ -2001,6 +2004,9 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  zetajs@1.2.0:
+    resolution: {integrity: sha512-lAY5Q7qvvGYlmsMyuAByL/re9uIbDmJhHLXvF2FNhOdnv8V1/jUTS5EwIB6dAohFtzrd9HhP//5eoAvNGc9hPA==}
+
   zlibjs@0.3.1:
     resolution: {integrity: sha512-+J9RrgTKOmlxFSDHo0pI1xM6BLVUv+o0ZT9ANtCxGkjIVCCUdx9alUF8Gm+dGLKbkkkidWIHFDZHDMpfITt4+w==}
 
@@ -3702,6 +3708,8 @@ snapshots:
   yallist@3.1.1: {}
 
   yocto-queue@0.1.0: {}
+
+  zetajs@1.2.0: {}
 
   zlibjs@0.3.1: {}
 

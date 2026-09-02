@@ -186,6 +186,56 @@ rules out the sidecar (ADR-002) and the container-on-Cloud-Run option.
 
 ---
 
+## ADR-012 — LibreOffice-WASM tier: plumbing now, assets deferred
+
+**Status:** Accepted (2026-09-02)
+
+**Context:** ADR-011 promised an opt-in LibreOffice-WASM (ZetaJS / ZetaOffice)
+tier for full-fidelity Office→PDF. Building it out revealed three blockers that
+are not worth clearing for a friends-and-family tool right now:
+
+1. **Self-hosting is mandatory but heavy.** `zetajs` (npm, MIT, ~60 KB) is only
+   the JS wrapper; it defaults to fetching the actual engine from
+   `https://cdn.zetaoffice.net/zetaoffice_latest/`. ADR-007 forbids any
+   third-party runtime origin, so the engine (`soffice.js` ≈ 0.9 MB,
+   `soffice.wasm`, `soffice.data`, pthread workers — tens to a few hundred MB
+   together) must be served same-origin, i.e. vendored.
+2. **The binaries don't belong in the repo.** Committing that to a public git
+   repo needs Git LFS; a Vercel Hobby static deploy is not sized for it; the
+   owner's hard constraint is "free". Fetching them in the Vercel build instead
+   is possible but adds a big, flaky step to every deploy.
+3. **Can't verify to our own standard.** The rule is "render the output and look
+   at it" (learned in M2). Without the multi-hundred-MB toolchain present there
+   is nothing to render, and shipping an unverified heavy integration is worse
+   than not shipping it.
+
+**Decision:** Land the **plumbing** and stop there:
+
+- `zetajs` pinned as a dependency; a `src/lib/convert/libreoffice.ts` module that
+  feature-detects (`crossOriginIsolated` **and** a `HEAD /vendor/libreoffice/
+  soffice.js` → 200) and, only then, lazy-loads `zetajs` pointed at
+  `/vendor/libreoffice/` for a headless convert.
+- `scripts/vendor-libreoffice.mjs` (`pnpm vendor:libreoffice`) — owner-run,
+  downloads the engine from the ZetaOffice CDN into `public/vendor/libreoffice/`
+  and writes `SHA256SUMS`. That directory is git-ignored (README + `.gitignore`
+  kept); the fetch is build-time and owner-initiated, never at runtime, exactly
+  like `pnpm vendor` for tesseract/qpdf.
+- `OfficeShell` shows the high-fidelity opt-in **only** when the feature-detect
+  passes. On every current deployment it doesn't, so the UI is unchanged and the
+  lightweight tier (ADR-011 tier 1) is the whole Office story for now.
+
+**Consequences:**
+- Tier 2 is dormant, not removed. Activating it later = run `vendor:libreoffice`
+  (or wire it into the Vercel build), confirm `crossOriginIsolated`, add the
+  vendored `SHA256SUMS` to CI, verify a real `.docx/.xlsx/.pptx` round-trip.
+- COOP `same-origin` + COEP `require-corp` stay on (vite config + `vercel.json`)
+  so isolation is ready the day the assets land.
+- The honest fallback for users who need an exact match today: the lightweight
+  tier, or "Print to PDF" from the source application. The UI copy says so.
+- Closes Q8 (defer). Q4 stands resolved: COOP/COEP are on globally.
+
+---
+
 ## ADR-009 — Scope: to-PDF only, unlock-only security, no accounts
 
 **Status:** Accepted (2026-09-02)
@@ -207,5 +257,5 @@ list live in [`01-vision-and-scope.md`](01-vision-and-scope.md).
 | Q4 | Turn on COOP/COEP globally (needed for LibreOffice WASM; also helps threaded OCR) — or only on demand | M3 / M5 |
 | Q5 | Ship a PWA app-shell service worker at all? | post-launch |
 | Q6 | Which OCR language packs to bundle by default | M3 |
-| Q7 | PowerPoint default renderer: `PPTXjs` vs `pptx-preview` vs "decks need the WASM tier" | M5 |
-| Q8 | Bundle the LibreOffice WASM engine as an opt-in from launch, or add post-launch | M5 |
+| ~~Q7~~ | PowerPoint default renderer → **decided: `pptx-preview`** (Tier 1), M5b | done |
+| ~~Q8~~ | LibreOffice WASM opt-in from launch → **decided: defer**, plumbing only, ADR-012 | done |

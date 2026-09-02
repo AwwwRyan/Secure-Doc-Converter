@@ -162,7 +162,8 @@ errors.
 
 ---
 
-**Status: M5a + M5b done** — Images, HTML and Office (lightweight tier).
+**Status: M5 done** — Images, HTML, Office (lightweight tier); Tier 2
+(LibreOffice-WASM) is plumbed but dormant (ADR-012).
 
 - M5a — **Images→PDF** 🟢 (`src/lib/pdf/imageToPdf.ts` in a code-split `convert`
   worker): one image per page, list order. JPEG/PNG embed directly; anything
@@ -195,15 +196,30 @@ errors.
   tables; `.pptx` (3 slides) → 3-page PDF — rendered + eyeballed, no console
   errors. New `pnpm check:origins` guardrail (allow-lists inert URL strings in
   vendored libs, fails on any real new origin) replaces the CI grep.
-- M5c (next) — **Office→PDF Tier 2 (⚙️, opt-in):** integrate **LibreOffice WASM
-  (ZetaJS)** — vendored + `SHA256SUMS`, lazy-loaded behind the "~100–250 MB, one
-  time" prompt, runs in a dedicated Worker, feature-detected (cross-origin
-  isolation + RAM). Confirm COOP/COEP headers give `crossOriginIsolated === true`.
+- M5c — **Office→PDF Tier 2 (⚙️, opt-in): plumbing only, engine deferred**
+  (ADR-012). The ZetaOffice engine is ~221 MB (`soffice.wasm` 121 MB +
+  `soffice.data` 100 MB) — too big for the repo or a free static deploy, and
+  ADR-007 forbids fetching it from the ZetaOffice CDN at runtime. What landed:
+  `zetajs` pinned; `src/lib/convert/libreoffice.ts` with a working
+  `libreOfficeStatus()` feature-detect (`crossOriginIsolated` + a
+  content-type-checked `HEAD /vendor/libreoffice/soffice.js`, so the SPA
+  fallback can't false-positive) and a `libreOfficeConvert()` following the
+  ZetaJS `convertpdf` example (headless `loadComponentFromURL` →
+  `storeToURL(writer|calc|impress_pdf_Export)`); `scripts/vendor-libreoffice.mjs`
+  (`pnpm vendor:libreoffice`) that downloads the engine + copies the ZetaJS glue
+  out of `node_modules` with its CDN constants rewritten to `/vendor/libreoffice/`
+  and writes `SHA256SUMS`; `public/vendor/libreoffice/` git-ignored with an
+  activation README; `OfficeShell` shows a high-fidelity opt-in **only** when the
+  detect passes — dormant on every current deployment, so the UI is unchanged.
+  Not verified end-to-end (needs the 221 MB engine present); the README carries
+  the activation checklist.
 - S6 states: fidelity-warning, too-large, engine-load-failed, tier-unavailable.
 
-**Done when:** `.docx/.pptx/.xlsx` samples convert in Tier 1 with correct content;
-Tier 2 matches LibreOffice; DevTools shows **zero uploads** for both tiers on all
-target browsers; Tier 2 is cleanly hidden where it can't run.
+**Done when:** ✅ `.docx/.pptx/.xlsx` samples convert in Tier 1 with correct
+content; ✅ DevTools shows **zero uploads**; ✅ Tier 2 is cleanly hidden where it
+can't run. **Deferred (ADR-012):** shipping the Tier 2 engine and verifying it
+matches LibreOffice — re-opens if/when the ~221 MB engine gets a same-origin
+home (Git LFS, deploy-time vendor step, or a paid plan).
 
 ---
 
