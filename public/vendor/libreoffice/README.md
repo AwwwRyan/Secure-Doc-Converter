@@ -17,19 +17,28 @@ Office story. That is the shipped state.
    `soffice.data`, `soffice.data.js.metadata` from
    `https://cdn.zetaoffice.net/zetaoffice_latest/`, copies the ZetaJS glue
    (`zeta.js`, `zetaHelper.js`) out of `node_modules/zetajs` with its hard-coded
-   CDN fallbacks rewritten to `/vendor/libreoffice/`, and writes `SHA256SUMS`.
+   CDN fallbacks rewritten to `/vendor/libreoffice/`, generates `office_thread.js`
+   (the headless-convert worker script), and writes `SHA256SUMS`.
    (Set `LOWA_BASE` to use a mirror.)
 2. Serve this directory **same-origin** with cross-origin isolation headers —
    `Cross-Origin-Opener-Policy: same-origin` and
    `Cross-Origin-Embedder-Policy: require-corp`. `vercel.json` and the Vite dev
    server already set these globally, so `pnpm dev` / `pnpm preview` and a Vercel
    deploy pick the engine up with no extra config.
-3. For a Vercel deploy, either commit the files via Git LFS **or** run
+3. **Resolve the `data:`-script vs CSP conflict.** `ZetaHelperMain` injects a
+   tiny `data:text/javascript,…` module (its "threadWrapScript") that the app's
+   `script-src 'self'` (docs/05) blocks. Either add an ADR that widens
+   `script-src` (a `sha256-…` hash for that one snippet is tightest; `data:` is
+   broadest) in `vercel.json` + `vite.config.ts`, or patch the vendored
+   `zetaHelper.js` to load an equivalent vendored file instead. This app's own
+   code no longer uses any `data:` script — `office_thread.js` is a real file.
+4. For a Vercel deploy, either commit the files via Git LFS **or** run
    `pnpm vendor:libreoffice` as part of the build command so the engine is
    fetched at deploy time (never at runtime). Add `SHA256SUMS` to the CI
-   checksum step, mirroring `public/vendor/{tesseract,qpdf}`.
-4. Verify a real `.docx` / `.xlsx` / `.pptx` round-trips — render the output PDF
-   and look at it (project rule since M2).
+   checksum step, mirroring `public/vendor/{tesseract,qpdf}`; `pnpm check:origins`
+   already scans `dist/` (glue included).
+5. Verify a real `.docx` / `.xlsx` / `.pptx` (and a legacy `.doc` / `.odt`)
+   round-trips — render the output PDF and look at it (project rule since M2).
 
 The runtime only ever fetches from `/vendor/libreoffice/` on its own origin;
 the ZetaOffice CDN is touched by the vendor step alone.

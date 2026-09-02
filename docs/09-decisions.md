@@ -228,6 +228,12 @@ are not worth clearing for a friends-and-family tool right now:
 - Tier 2 is dormant, not removed. Activating it later = run `vendor:libreoffice`
   (or wire it into the Vercel build), confirm `crossOriginIsolated`, add the
   vendored `SHA256SUMS` to CI, verify a real `.docx/.xlsx/.pptx` round-trip.
+- **Open CSP conflict, flagged for the activator:** `ZetaHelperMain` injects a
+  `data:` script module of its own (its "threadWrapScript"), which
+  `script-src 'self'` blocks. Activation needs its own ADR to widen `script-src`
+  (a `sha256-` hash for that snippet, ideally) or a patch to the vendored glue.
+  This app's code adds no `data:` script — `office_thread.js` is a real vendored
+  file, and `check:origins` scans `dist/` so the neutralised glue is covered.
 - COOP `same-origin` + COEP `require-corp` stay on (vite config + `vercel.json`)
   so isolation is ready the day the assets land.
 - The honest fallback for users who need an exact match today: the lightweight

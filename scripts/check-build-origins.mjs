@@ -12,10 +12,13 @@
  *
  * Usage: node scripts/check-build-origins.mjs [distDir]
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const DIST = process.argv[2] ?? 'dist/assets';
+// Scan the whole build, not just dist/assets — public/ files (e.g. the vendored
+// LibreOffice glue under dist/vendor/) land at the dist root and must be
+// checked too.
+const DIST = process.argv[2] ?? (existsSync('dist') ? 'dist' : 'dist/assets');
 
 /** host -> why it is inert (documentation, shown on failure diff). */
 const ALLOW = new Map([

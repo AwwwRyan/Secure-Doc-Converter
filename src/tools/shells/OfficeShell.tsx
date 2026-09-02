@@ -69,14 +69,10 @@ export function OfficeShell({ tool }: { tool: ToolDef }) {
     setPhase(useHifi ? 'Starting LibreOffice…' : 'Loading converter…');
     try {
       if (useHifi) {
-        const bytes = await libreOfficeConvert(first.file);
-        const kind =
-          (['docx', 'docm'].some((e) => first.name.toLowerCase().endsWith(e)) && 'word') ||
-          (['xlsx', 'xlsm'].some((e) => first.name.toLowerCase().endsWith(e)) && 'excel') ||
-          'powerpoint';
+        const { bytes, kind } = await libreOfficeConvert(first.file);
         setResult([
           {
-            name: OUT_NAME[kind as OfficeKind],
+            name: OUT_NAME[kind],
             bytes,
             url: URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })),
             note: 'Rendered by LibreOffice.',
@@ -202,15 +198,24 @@ export function OfficeShell({ tool }: { tool: ToolDef }) {
               <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
                 <div className="flex items-center justify-between text-[13px] font-semibold text-ink">
                   <span>Converting…</span>
-                  <span className="tabular-nums text-muted">{Math.round(progress * 100)}%</span>
+                  {!useHifi && (
+                    <span className="tabular-nums text-muted">{Math.round(progress * 100)}%</span>
+                  )}
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-line">
                   <div
-                    className="h-full rounded-full bg-accent transition-[width]"
-                    style={{ width: `${Math.max(4, Math.round(progress * 100))}%` }}
+                    className={
+                      'h-full rounded-full bg-accent ' +
+                      (useHifi ? 'w-1/3 animate-pulse' : 'transition-[width]')
+                    }
+                    style={
+                      useHifi ? undefined : { width: `${Math.max(4, Math.round(progress * 100))}%` }
+                    }
                   />
                 </div>
-                <span className="text-[11.5px] text-muted">{phase}</span>
+                <span className="text-[11.5px] text-muted">
+                  {useHifi ? 'LibreOffice is working — this can take a minute…' : phase}
+                </span>
               </div>
             )}
 
