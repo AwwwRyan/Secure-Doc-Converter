@@ -24,7 +24,20 @@ describe('tool manifest', () => {
     const ready = TOOLS.filter((t) => t.status === 'ready').map((t) => t.id);
     // Organize (M1). Grows as milestones land.
     expect(new Set(ready)).toEqual(
-      new Set(['merge', 'split', 'remove-pages', 'extract-pages', 'rotate', 'organize-pages']),
+      new Set([
+        // M1 — Organize
+        'merge',
+        'split',
+        'remove-pages',
+        'extract-pages',
+        'rotate',
+        'organize-pages',
+        // M2a — Edit
+        'watermark',
+        'page-numbers',
+        'crop',
+        'rotate-edit',
+      ]),
     );
   });
 

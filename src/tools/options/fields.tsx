@@ -122,4 +122,119 @@ export function Toggle({
   );
 }
 
-export const RANGE_HINT = 'e.g. 1-3, 5, 8-  (open end = to last page)';
+export function NumberField({
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  suffix,
+  ariaLabel,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  suffix?: string;
+  ariaLabel: string;
+}) {
+  return (
+    <span className="inline-flex h-9 items-center rounded-[var(--radius-ctl)] border border-line bg-surface px-3 focus-within:border-accent">
+      <input
+        type="number"
+        aria-label={ariaLabel}
+        value={value}
+        min={min}
+        max={max}
+        step={step ?? 1}
+        onChange={(e) =>
+          onChange(Number.isFinite(e.target.valueAsNumber) ? e.target.valueAsNumber : 0)
+        }
+        className="w-full bg-transparent text-[13px] text-ink outline-none"
+      />
+      {suffix && <span className="pl-1 text-[11.5px] text-faint">{suffix}</span>}
+    </span>
+  );
+}
+
+export function ColorField({
+  value,
+  onChange,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <span className="inline-flex h-9 items-center gap-2 rounded-[var(--radius-ctl)] border border-line bg-surface px-2">
+      <input
+        type="color"
+        aria-label={ariaLabel}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-6 w-8 cursor-pointer rounded border-0 bg-transparent p-0"
+      />
+      <span className="text-[12px] text-muted tabular-nums uppercase">{value}</span>
+    </span>
+  );
+}
+
+export function SelectField<T extends string>({
+  value,
+  onChange,
+  options,
+  ariaLabel,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: ReadonlyArray<{ value: T; label: string }>;
+  ariaLabel: string;
+}) {
+  return (
+    <select
+      aria-label={ariaLabel}
+      value={value}
+      onChange={(e) => onChange(e.target.value as T)}
+      className="h-9 rounded-[var(--radius-ctl)] border border-line bg-surface px-2.5 text-[13px] text-ink outline-none focus-visible:border-accent"
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+export function Slider({
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  ariaLabel,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  min: number;
+  max: number;
+  step: number;
+  ariaLabel: string;
+}) {
+  return (
+    <input
+      type="range"
+      aria-label={ariaLabel}
+      value={value}
+      min={min}
+      max={max}
+      step={step}
+      onChange={(e) => onChange(e.target.valueAsNumber)}
+      className="accent-accent"
+    />
+  );
+}
+
+export const RANGE_HINT = 'e.g. 1-3, 5, 8-  (blank = all pages, open end = to last page)';

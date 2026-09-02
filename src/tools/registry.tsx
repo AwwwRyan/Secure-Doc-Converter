@@ -1,9 +1,12 @@
 import type { ComponentType } from 'react';
 import type { ToolDef } from '@/lib/tools/types';
+import { CropOptions } from '@/tools/options/CropOptions';
 import { ExtractOptions } from '@/tools/options/ExtractOptions';
+import { PageNumberOptions } from '@/tools/options/PageNumberOptions';
 import { RemoveOptions } from '@/tools/options/RemoveOptions';
 import { RotateOptions } from '@/tools/options/RotateOptions';
 import { SplitOptions } from '@/tools/options/SplitOptions';
+import { WatermarkOptions } from '@/tools/options/WatermarkOptions';
 import { OrganizeShell } from '@/tools/lazy-shells';
 
 export type ToolOptions = Record<string, unknown>;
@@ -71,6 +74,65 @@ export const TOOL_CONFIG: Record<string, ToolConfig> = {
     action: 'Apply changes',
     defaultOptions: { op: 'arrange' },
     CustomShell: OrganizeShell,
+  },
+
+  // ---- Edit (M2a) ----
+  watermark: {
+    workerId: 'edit',
+    multiple: false,
+    action: 'Add watermark',
+    defaultOptions: {
+      op: 'watermark',
+      text: '',
+      layout: 'center',
+      fontSize: 60,
+      rotationDeg: 45,
+      color: '#111111',
+      opacity: 0.15,
+      bold: true,
+      range: '',
+    },
+    Options: WatermarkOptions as ComponentType<OptionsProps>,
+  },
+  'page-numbers': {
+    workerId: 'edit',
+    multiple: false,
+    action: 'Add page numbers',
+    defaultOptions: {
+      op: 'page-numbers',
+      format: 'n',
+      position: 'bottom-center',
+      margin: 28,
+      fontSize: 11,
+      startAt: 1,
+      color: '#333333',
+      skipFirst: false,
+      range: '',
+    },
+    Options: PageNumberOptions as ComponentType<OptionsProps>,
+  },
+  crop: {
+    workerId: 'edit',
+    multiple: false,
+    action: 'Crop',
+    defaultOptions: {
+      op: 'crop',
+      unit: 'pt',
+      uniform: true,
+      top: 24,
+      right: 24,
+      bottom: 24,
+      left: 24,
+      range: '',
+    },
+    Options: CropOptions as ComponentType<OptionsProps>,
+  },
+  'rotate-edit': {
+    workerId: 'organize',
+    multiple: false,
+    action: 'Rotate',
+    defaultOptions: { op: 'rotate', angle: 90, scope: 'all', range: '' },
+    Options: RotateOptions as ComponentType<OptionsProps>,
   },
 };
 
