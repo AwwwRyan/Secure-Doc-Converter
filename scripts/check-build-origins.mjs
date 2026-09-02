@@ -25,6 +25,7 @@ const ALLOW = new Map([
   ['www.w3.org', 'XML/SVG namespace URIs'],
   ['schemas.openxmlformats.org', 'OOXML namespace URIs (docx/xlsx/pptx parsers)'],
   ['sheetjs.openxmlformats.org', 'SheetJS synthetic namespace string'],
+  ['sheetjs.com', 'SheetJS version-stamp string in an internal data table — never fetched'],
   ['schemas.microsoft.com', 'OOXML extension namespace URIs'],
   ['purl.org', 'Dublin Core namespace URIs'],
   ['purl.oclc.org', 'ODF namespace URIs'],
