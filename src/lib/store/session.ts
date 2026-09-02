@@ -9,27 +9,34 @@ export interface SessionFile {
   readonly file: File;
 }
 
+export interface SessionResult {
+  url: string;
+  name: string;
+  /** > 1 means several output files were bundled into the .zip at `url`. */
+  fileCount: number;
+}
+
 interface SessionState {
   toolId: string | null;
   files: SessionFile[];
   status: RunStatus;
   progress: number; // [0, 1]
   error: string | null;
-  resultUrl: string | null;
-  resultName: string | null;
+  result: SessionResult | null;
 
   openTool: (toolId: string) => void;
   addFiles: (files: File[]) => void;
   removeFile: (id: string) => void;
+  moveFile: (id: string, dir: -1 | 1) => void;
   setStatus: (status: RunStatus) => void;
   setProgress: (progress: number) => void;
   setError: (message: string) => void;
-  setResult: (url: string, name: string) => void;
+  setResult: (result: SessionResult) => void;
   reset: () => void;
 }
 
-function revoke(url: string | null): void {
-  if (url) URL.revokeObjectURL(url);
+function revoke(result: SessionResult | null): void {
+  if (result) URL.revokeObjectURL(result.url);
 }
 
 const EMPTY = {
@@ -37,8 +44,7 @@ const EMPTY = {
   status: 'idle' as RunStatus,
   progress: 0,
   error: null as string | null,
-  resultUrl: null as string | null,
-  resultName: null as string | null,
+  result: null as SessionResult | null,
 };
 
 export const useSession = create<SessionState>((set, get) => ({
@@ -47,7 +53,7 @@ export const useSession = create<SessionState>((set, get) => ({
 
   openTool: (toolId) => {
     if (get().toolId === toolId) return;
-    revoke(get().resultUrl);
+    revoke(get().result);
     set({ toolId, ...EMPTY });
   },
 
@@ -66,17 +72,27 @@ export const useSession = create<SessionState>((set, get) => ({
 
   removeFile: (id) => set((s) => ({ files: s.files.filter((f) => f.id !== id) })),
 
+  moveFile: (id, dir) =>
+    set((s) => {
+      const i = s.files.findIndex((f) => f.id === id);
+      const j = i + dir;
+      if (i === -1 || j < 0 || j >= s.files.length) return s;
+      const files = [...s.files];
+      [files[i], files[j]] = [files[j]!, files[i]!];
+      return { files };
+    }),
+
   setStatus: (status) => set({ status }),
   setProgress: (progress) => set({ progress }),
   setError: (message) => set({ status: 'error', error: message }),
 
-  setResult: (url, name) => {
-    revoke(get().resultUrl);
-    set({ status: 'done', progress: 1, resultUrl: url, resultName: name });
+  setResult: (result) => {
+    revoke(get().result);
+    set({ status: 'done', progress: 1, error: null, result });
   },
 
   reset: () => {
-    revoke(get().resultUrl);
+    revoke(get().result);
     set({ ...EMPTY });
   },
 }));

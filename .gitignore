@@ -23,3 +23,6 @@ blob-report/
 .idea/
 *.log
 .vite/
+
+# local scratch drivers
+_*.mjs

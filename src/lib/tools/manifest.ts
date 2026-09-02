@@ -39,7 +39,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'organize',
     blurb: 'Combine files into one',
     icon: Combine,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
   {
@@ -48,7 +48,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'organize',
     blurb: 'Break one PDF into several',
     icon: Scissors,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
   {
@@ -57,7 +57,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'organize',
     blurb: "Delete pages you don't need",
     icon: Trash2,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
   {
@@ -66,7 +66,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'organize',
     blurb: 'Pull out the pages you want',
     icon: WrapText,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
   {
@@ -84,7 +84,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'organize',
     blurb: 'Turn pages 90° at a time',
     icon: RotateCw,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
 

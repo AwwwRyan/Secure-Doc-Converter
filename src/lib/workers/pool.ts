@@ -8,18 +8,18 @@ export interface ToolWorkerHandle {
 }
 
 /**
- * Factory per tool id. Each entry returns a fresh, code-split Worker so a tool's
- * engine bytes never land in the entry chunk (docs/03, CLAUDE.md).
- *
- * M0 wires only the demo worker; M1+ adds one line per real tool.
+ * Which worker module backs each tool. Tools that share an engine share a
+ * code-split chunk (e.g. all Organize tools → pdf-lib); heavier engines
+ * (pdf.js, tesseract, qpdf, LibreOffice-WASM) get their own.
  */
 const WORKER_FACTORIES: Record<string, () => Worker> = {
   demo: () => new Worker(new URL('./demo.worker.ts', import.meta.url), { type: 'module' }),
+  organize: () => new Worker(new URL('./organize.worker.ts', import.meta.url), { type: 'module' }),
 };
 
-export function createToolWorker(toolId: string): ToolWorkerHandle {
-  const factory = WORKER_FACTORIES[toolId] ?? WORKER_FACTORIES['demo'];
-  if (!factory) throw new Error(`no worker factory for tool "${toolId}"`);
+export function createWorker(workerId: string): ToolWorkerHandle {
+  const factory = WORKER_FACTORIES[workerId];
+  if (!factory) throw new Error(`no worker factory "${workerId}"`);
   const worker = factory();
   const api: RemoteToolWorker = Comlink.wrap<ToolWorkerApi>(worker);
   return {
@@ -30,6 +30,6 @@ export function createToolWorker(toolId: string): ToolWorkerHandle {
   };
 }
 
-export function hasToolWorker(toolId: string): boolean {
-  return toolId in WORKER_FACTORIES;
+export function hasWorker(workerId: string): boolean {
+  return workerId in WORKER_FACTORIES;
 }

@@ -20,8 +20,12 @@ describe('tool manifest', () => {
     }
   });
 
-  it('ships nothing as ready yet (M0)', () => {
-    expect(TOOLS.every((t) => t.status === 'planned')).toBe(true);
+  it('only marks known tools as ready', () => {
+    const ready = TOOLS.filter((t) => t.status === 'ready').map((t) => t.id);
+    // Organize (M1). Grows as milestones land.
+    expect(new Set(ready)).toEqual(
+      new Set(['merge', 'split', 'remove-pages', 'extract-pages', 'rotate']),
+    );
   });
 
   it('getTool resolves known ids and rejects unknown ones', () => {

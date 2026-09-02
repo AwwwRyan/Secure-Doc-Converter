@@ -1,20 +1,25 @@
 /// <reference lib="webworker" />
 import * as Comlink from 'comlink';
-import type { ProgressFn, ToolWorkerApi } from '@/lib/workers/types';
+import type { ProgressFn, RunResult, ToolWorkerApi } from '@/lib/workers/types';
 
 /**
- * Placeholder worker used by the M0 tool shell to exercise the run/progress/
- * result flow. Real tool workers (pdf-lib, qpdf-wasm, ...) arrive in M1+.
- * It does no real work and returns an empty buffer.
+ * Placeholder worker for the /t/demo route. Does no real work — it just steps a
+ * progress bar and returns an empty placeholder PDF so the shell's
+ * run → progress → result → cleanup path can be exercised.
  */
 const api: ToolWorkerApi = {
-  async run(_input, _options, onProgress: ProgressFn) {
+  async run(_inputs, _options, onProgress: ProgressFn): Promise<RunResult> {
     const steps = 20;
     for (let i = 1; i <= steps; i++) {
       await new Promise((resolve) => setTimeout(resolve, 90));
       onProgress(i / steps);
     }
-    return new ArrayBuffer(0);
+    return {
+      kind: 'file',
+      name: 'demo-result.pdf',
+      mime: 'application/pdf',
+      bytes: new TextEncoder().encode('%PDF-1.4\n%%EOF\n').slice().buffer,
+    };
   },
 };
 
