@@ -104,7 +104,7 @@ export const TOOLS: readonly ToolDef[] = [
     category: 'optimize',
     blurb: 'Make scans searchable',
     icon: ScanText,
-    status: 'planned',
+    status: 'ready',
     tier: 'device',
   },
   {

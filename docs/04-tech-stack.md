@@ -26,7 +26,7 @@ no third-party runtime calls, permissive licences where practical.
 | Build / modify PDFs (merge, split, rotate, crop, watermark, page numbers, overlay, images→PDF) | **`pdf-lib`** | MIT | Pure JS, no native deps. Upstream is quiet; evaluate the maintained **`@cantoo/pdf-lib`** fork at M1. Cannot reflow existing text (by design — see scope). |
 | Render pages, thumbnails, text extraction | **`pdf.js`** (`pdfjs-dist`) | Apache-2.0 | Ship the worker + local `cmaps` + `standard_fonts`. |
 | Unlock (decrypt with known password; strip owner restrictions) | **`qpdf` → WASM** | Apache-2.0 | RC4 + AES-128/256. Prebuilt (`@jspawn/qpdf-wasm`) or our own Emscripten build, vendored with checksum. |
-| OCR | **`tesseract.js`** | Apache-2.0 | WASM engine + `tessdata` packs served from our origin. Optional multithread needs COOP/COEP (see 05). |
+| OCR | **`tesseract.js`** 7 + **`tesseract.js-core`** 6.1.2 | Apache-2.0 | Worker + fixed-SIMD LSTM WASM core + `eng.traineddata` (tessdata_fast) all **vendored** under `public/vendor/tesseract/` by `scripts/vendor-tesseract.mjs` (`pnpm vendor`), served same-origin. `corePath` points at the exact `.wasm.js` (tesseract's own detection asks for a relaxed-SIMD build we don't ship). `cacheMethod: 'none'` — nothing cached to IndexedDB. tesseract.js's postinstall is skipped (`pnpm-workspace.yaml → allowBuilds`). `SHA256SUMS` checked in CI. Orchestrated on the main thread (`src/lib/ocr/runOcr.ts`); pdf.js + tesseract do the heavy work in their own workers. |
 | Zip (multi-file outputs / inputs) | **`fflate`** | MIT | Tiny. |
 | TIFF decode | **`utif`** | MIT | For images→PDF. |
 | HTML→PDF (best-effort) | **`paged.js`** + **`html2canvas`** + **`jsPDF`** | MIT / MIT / MIT | Sandboxed, inline-assets-only. |

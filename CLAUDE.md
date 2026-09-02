@@ -78,19 +78,33 @@ pnpm typecheck        # tsc -b
 pnpm lint             # eslint .
 pnpm test             # vitest run
 pnpm format           # prettier --write .
+pnpm vendor           # re-copy the tesseract engine into public/vendor/ from node_modules
 pnpm e2e              # playwright test  (browsers: `pnpm exec playwright install`)
 ```
+
+`tesseract.js`'s postinstall (it downloads its own core + langs) is deliberately
+skipped — see `pnpm-workspace.yaml` (`allowBuilds`). The exact files the app
+serves are vendored under `public/vendor/tesseract/` with a `SHA256SUMS` CI
+gate; `.npmrc` sets `verify-deps-before-run=false` so the skipped build doesn't
+fail `pnpm <script>`.
 
 ## Layout
 
 - `src/app/` — router + `RootLayout`
 - `src/routes/` — `HomePage` (tool launcher), `ToolPage`, `AboutPage`, `SettingsPage`, `NotFoundPage`
-- `src/components/` — `AppBar`, `Footer`, `ThemeToggle`, `PrivacyBadge`, `ToolCard`, `ToolShell`
-- `src/ui/` — design-system primitives (`Button`, `cn`)
-- `src/lib/tools/` — `manifest.ts` (the tool catalogue), `types.ts`
-- `src/lib/workers/` — Comlink pool + per-tool worker factories (`demo.worker.ts` for now)
+- `src/components/` — `AppBar`, `Footer`, `ThemeToggle`, `PrivacyBadge`, `ToolShell`, `FileList`,
+  `FileDropzone`, `ToolHeader`, `PagePreview`, `ResultCard`, `pagegrid/`
+- `src/ui/` — design-system primitives (`Button`, `cn`, `viewTransition`)
+- `src/lib/pdf/` — `organize` (merge/split/rotate/arrange), `edit` (watermark/page-numbers/crop),
+  `optimize` (compress/repair), `range`, `errors`, `thumbs` (pdf.js render)
+- `src/lib/ocr/runOcr.ts` — main-thread OCR orchestration (tesseract.js)
+- `src/lib/workers/` — Comlink pool + one worker per engine group (`organize` / `edit` /
+  `optimize` / `demo`)
 - `src/lib/store/` — `settings` (theme; localStorage) and `session` (per-run state)
-- `src/lib/hooks/useToolRun.ts` — spins a worker, streams progress, frees buffers
+- `src/lib/hooks/` — `useToolRun` (worker), `usePreview` (Edit live preview), `usePdfThumbs`,
+  `usePageModel`
+- `src/tools/` — `registry.tsx` (per-tool wiring), `options/*` (Options components),
+  `shells/*` + `lazy-shells.ts` (custom shells: Organize grid, Edit preview, OCR)
 
-Add a real tool: a folder under `src/lib/tools/`/`src/lib/workers/`, one manifest
-entry, one worker factory line. No tool imports another tool.
+Add a tool: a manifest entry + a `TOOL_CONFIG` entry pointing at a worker (or a
+`CustomShell`). No tool imports another tool.

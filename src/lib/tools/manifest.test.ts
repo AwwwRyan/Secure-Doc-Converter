@@ -37,9 +37,10 @@ describe('tool manifest', () => {
         'page-numbers',
         'crop',
         'rotate-edit',
-        // M3a — Optimize
+        // M3a/b — Optimize
         'compress',
         'repair',
+        'ocr',
       ]),
     );
   });

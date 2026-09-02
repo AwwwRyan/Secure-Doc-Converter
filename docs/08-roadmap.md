@@ -113,7 +113,22 @@ Compress (MIT path), OCR (Tesseract), Repair (best-effort).
 - Repair: tolerant reload (`throwOnInvalidObject: false`) + re-serialise;
   clear error when even that fails. Verified against trailing-junk + garbage.
 - `RunResult.file` + `ResultFile` gained an optional `note`.
-- **M3b** (next): OCR with `tesseract.js`.
+
+**Status: M3b done** — OCR (`tesseract.js` 7).
+
+- Worker + fixed-SIMD LSTM WASM core + `eng.traineddata` (tessdata_fast)
+  **vendored** under `public/vendor/tesseract/` (`pnpm vendor`), served
+  same-origin, `SHA256SUMS`-gated in CI. `corePath` pinned to the exact
+  `.wasm.js`. `cacheMethod: 'none'`.
+- `src/lib/ocr/runOcr.ts` orchestrates on the main thread (tesseract + pdf.js
+  do the work in their own workers): pdf.js rasterises each page → tesseract
+  recognises → for "Searchable PDF", merge the per-page searchable PDFs
+  tesseract emits; for "Plain text", concatenate. Options: format, quality
+  (render scale), page range. Cancellable.
+- Verified: a rendered "scan" round-trips to exact text ("Receipt total 9876
+  rupees paid by card ending 4242").
+- Deferred: more languages; a proper text-layer overlay that keeps existing
+  vector text (current output rasterises the page).
 
 - Compress: canvas image re-encode + downsample + object-stream rewrite +
   metadata strip; presets; before/after report; revert.

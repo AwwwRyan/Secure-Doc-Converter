@@ -1,0 +1,6 @@
+# tesseract.js ships a postinstall that downloads its own copy of the WASM core
+# and language files. We deliberately do NOT run it — the exact files the app
+# needs are vendored under public/vendor/tesseract/ (scripts/vendor-tesseract.mjs).
+# Declaring the decision here stops pnpm treating the skipped build as an error.
+allowBuilds:
+  tesseract.js: false

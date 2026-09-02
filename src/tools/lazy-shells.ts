@@ -11,3 +11,7 @@ export const OrganizeShell = lazy(() =>
 export const EditShell = lazy(() =>
   import('@/tools/shells/EditShell').then((m) => ({ default: m.EditShell })),
 );
+
+export const OcrShell = lazy(() =>
+  import('@/tools/shells/OcrShell').then((m) => ({ default: m.OcrShell })),
+);

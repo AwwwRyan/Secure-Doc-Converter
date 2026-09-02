@@ -12,27 +12,46 @@ export interface Thumb {
   height: number;
 }
 
+/** Open a PDF with pdf.js. Caller must `closePdf()` the returned doc when done. */
+export function openPdf(bytes: ArrayBuffer): Promise<PDFDocumentProxy> {
+  return pdfjs.getDocument({ data: bytes.slice(0) }).promise;
+}
+
+/** Release a doc opened with `openPdf` (its `.destroy()` is missing from the types). */
+export function closePdf(doc: PDFDocumentProxy): void {
+  void (doc as unknown as { destroy?: () => Promise<void> }).destroy?.();
+}
+
+/** Render one page (1-based) of an already-open doc to a fresh canvas. */
+export async function renderPageToCanvas(
+  doc: PDFDocumentProxy,
+  page: number,
+  scale: number,
+): Promise<HTMLCanvasElement> {
+  const pdfPage = await doc.getPage(page);
+  const viewport = pdfPage.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(viewport.width);
+  canvas.height = Math.ceil(viewport.height);
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('2d canvas unavailable');
+  await pdfPage.render({ canvasContext: ctx, viewport, canvas }).promise;
+  pdfPage.cleanup();
+  return canvas;
+}
+
 /**
  * One-shot render of a document's first page to a self-contained data URL
  * (no cleanup needed). Used for the Edit tools' live preview.
  */
 export async function renderFirstPage(bytes: ArrayBuffer, targetWidth = 560): Promise<string> {
-  const task = pdfjs.getDocument({ data: bytes.slice(0) });
+  const doc = await openPdf(bytes);
   try {
-    const doc = await task.promise;
-    const pdfPage = await doc.getPage(1);
-    const base = pdfPage.getViewport({ scale: 1 });
-    const viewport = pdfPage.getViewport({ scale: targetWidth / base.width });
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.ceil(viewport.width);
-    canvas.height = Math.ceil(viewport.height);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('2d canvas unavailable');
-    await pdfPage.render({ canvasContext: ctx, viewport, canvas }).promise;
-    pdfPage.cleanup();
+    const base = (await doc.getPage(1)).getViewport({ scale: 1 });
+    const canvas = await renderPageToCanvas(doc, 1, targetWidth / base.width);
     return canvas.toDataURL('image/png');
   } finally {
-    void task.destroy();
+    closePdf(doc);
   }
 }
 
